@@ -121,10 +121,21 @@ pytest
 
 ## Implementation Roadmap (TODOs)
 
-- [ ] **Authentication**: Implement password hashing (`werkzeug.security`) and WTForms for registration and login.
-- [ ] **Catalog & Database Seeding**: Build database initialization CLI command (`flask init-db`) to seed initial categories and sample products.
-- [ ] **Session Cart**: Implement `services/cart_service.py` to persist items in Flask `session['cart']`.
-- [ ] **Checkout & Payment**: Implement `services/order_service.checkout()` with atomic transaction rollback on inventory shortage.
-- [ ] **Tracking Pipeline**: Implement `services/tracking_service.add_event()` to reject invalid state transitions and update ETA.
-- [ ] **Search Index & Trie**: Implement inverted index tokenizer and trie-based prefix autocomplete in `services/search_service.py`.
-- [ ] **Admin Metrics**: Implement heap-based top sellers and time-series aggregation in `services/analytics_service.py`.
+### Completed
+
+- [x] **Authentication**: Registration, login, logout, and password hashing are implemented and covered by `tests/test_auth.py`.
+- [x] **Application setup**: The application factory, blueprint registration, and `init-db` / `create-admin` CLI commands are implemented.
+- [x] **Basic route smoke tests**: Authentication pages, the public tracking page, and the cart add endpoint have passing tests.
+
+### Remaining
+
+- [ ] **Catalog and search**: Add database-backed product/category listing, product detail, pagination, and initial sample-data seeding; implement indexed keyword search and trie-based autocomplete in `services/search_service.py`.
+- [ ] **Cart**: Implement `services/cart_service.py` and wire cart display, update, and remove routes to session state with current stock and price validation.
+- [ ] **Checkout and orders**: Implement transactional checkout, inventory updates, order status changes, and order retrieval in `services/order_service.py`.
+- [ ] **Shipment tracking**: Implement shipment creation, event validation and persistence, tracking lookup, and ETA calculation in `services/tracking_service.py`.
+- [ ] **Admin workflows and analytics**: Connect product, order, shipment, and user pages to database records; implement dashboard aggregations in `services/analytics_service.py`.
+- [ ] **Notifications**: Implement the notification queue and delivery processing in `services/notify_service.py`.
+- [ ] **Application support**: Add centralized error handlers and template context helpers; add database migrations if schema evolution is needed.
+- [ ] **Behavioral coverage**: Replace tests that assert `NotImplementedError` with tests for the completed cart, order, and tracking workflows, then cover the catalog and admin flows.
+
+**Verification note**: `pytest -q` currently passes all 18 tests in the project virtual environment. Some passing tests explicitly expect unimplemented service functions to raise `NotImplementedError`, so this is not evidence that the remaining workflows are complete.
