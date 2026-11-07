@@ -1,0 +1,185 @@
+/**
+ * Design Tokens for Dharti Mushroom Farm Storefront & Admin
+ * Fluid typography, spacing, semantic colors, radius, shadows, and transitions.
+ *
+ * BREAKPOINTS (min-width):
+ * - Small tablet / phablet: 600px
+ * - Standard desktop / laptop: 900px
+ * - Wide desktop / landscape: 1200px
+ * - Ultra-wide monitor: 1600px
+ */
+
+:root {
+  /* ==========================================================================
+     Color Palette: Farm-fresh, earthy, trustworthy, premium-but-friendly
+     ========================================================================== */
+  --color-bg: #FAF7F2;                 /* Warm off-white background */
+  --color-surface: #FFFFFF;            /* Pure cream/white surface for cards */
+  --color-surface-subtle: #F4EFE6;     /* Subtle secondary surface */
+  --color-primary: #2F4F3A;            /* Deep forest green primary */
+  --color-primary-dark: #223A2B;       /* Dark forest green for active/focus */
+  --color-primary-light: #416A4F;      /* Lighter forest green */
+  --color-secondary: #DCE5D8;          /* Soft sage secondary */
+  --color-secondary-dark: #B9CBB3;     /* Muted sage */
+  --color-secondary-light: #EEF3EC;    /* Lightest sage tint */
+  --color-text: #2B241E;               /* Earthy brown text */
+  --color-text-muted: #6F655B;         /* Muted warm text */
+  --color-text-inverse: #FFFFFF;       /* Inverted text on dark backgrounds */
+  --color-accent: #C4572F;             /* Terracotta accent for CTAs and highlights */
+  --color-accent-hover: #AB4823;       /* Deeper terracotta hover */
+  --color-accent-light: #F7EAE4;       /* Terracotta soft tint */
+  --color-line: #E6DFD3;               /* Earthy line & border color */
+  --color-line-light: #F0ECE4;         /* Subtle separator line */
+
+  /* Functional Status Colors */
+  --color-success: #2E7D4F;            /* Harvest green success */
+  --color-success-bg: #E8F5EC;         /* Soft green background */
+  --color-warning: #B7791F;            /* Warm amber warning */
+  --color-warning-bg: #FEF7EA;         /* Soft amber background */
+  --color-danger: #B3392F;             /* Deep red danger */
+  --color-danger-bg: #FDF0EE;          /* Soft red background */
+  --color-info: #2B6CB0;               /* Cold-chain blue */
+  --color-info-bg: #EDF5FD;            /* Soft blue background */
+
+  /* Status Badges */
+  --badge-pending-bg: #ECE7DF;
+  --badge-pending-text: #5A524A;
+  --badge-paid-bg: #E2ECE5;
+  --badge-paid-text: #245A39;
+  --badge-processing-bg: #FBF0DF;
+  --badge-processing-text: #8E5A11;
+  --badge-shipped-bg: #E5EFF9;
+  --badge-shipped-text: #1B528A;
+  --badge-delivered-bg: #E4F3E9;
+  --badge-delivered-text: #21693F;
+  --badge-cancelled-bg: #FCEAE8;
+  --badge-cancelled-text: #962820;
+
+  /* ==========================================================================
+     Typography & Fluid Type Scale with clamp()
+     Headings: Warm serif (Fraunces or Georgia)
+     Body: Clean sans (Inter or system-ui)
+     RULE: Never set font size below 14px (0.875rem)
+     ========================================================================== */
+  --font-serif: "Fraunces", Georgia, Cambria, "Times New Roman", serif;
+  --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  /* Fluid typography scale */
+  --text-sm: 0.875rem;                                           /* 14px (accessible minimum) */
+  --text-base: 1rem;                                             /* 16px */
+  --text-md: clamp(1.15rem, 1rem + 0.75vw, 1.35rem);             /* 18.4px - 21.6px */
+  --text-lg: clamp(1.35rem, 1.1rem + 1.25vw, 1.75rem);           /* 21.6px - 28px */
+  --text-xl: clamp(1.65rem, 1.25rem + 1.8vw, 2.25rem);           /* 26.4px - 36px */
+  --text-xxl: clamp(1.75rem, 1.2rem + 2.5vw, 2.75rem);          /* 28px - 44px */
+
+  --leading-tight: 1.2;
+  --leading-heading: 1.25;
+  --leading-body: 1.6;
+  --leading-loose: 1.75;
+
+  /* ==========================================================================
+     Fluid Spacing Scale with clamp()
+     ========================================================================== */
+  --space-1: 0.25rem;                                           /* 4px */
+  --space-2: 0.5rem;                                            /* 8px */
+  --space-3: 0.75rem;                                           /* 12px */
+  --space-4: clamp(0.75rem, 0.6rem + 0.6vw, 1rem);              /* 12px - 16px */
+  --space-5: clamp(1rem, 0.8rem + 1vw, 1.5rem);                 /* 16px - 24px */
+  --space-6: clamp(1.5rem, 1.15rem + 1.5vw, 2rem);              /* 24px - 32px */
+  --space-7: clamp(2rem, 1.5rem + 2.2vw, 3rem);                 /* 32px - 48px */
+  --space-8: clamp(2.5rem, 1.75rem + 3.2vw, 4rem);              /* 40px - 64px */
+
+  /* Touch & Control Target Minimums (Accessible minimum 44px) */
+  --touch-target-min: 44px;
+  --touch-target-control: 48px;
+
+  /* ==========================================================================
+     Borders, Radius & Shadows
+     Controls: 10px, Cards: 16px, Soft Shadows: 0 2px 12px rgba(43,36,30,.08)
+     ========================================================================== */
+  --radius-control: 10px;
+  --radius-card: 16px;
+  --radius-pill: 9999px;
+
+  --shadow-sm: 0 1px 3px rgba(43, 36, 30, 0.05);
+  --shadow-soft: 0 2px 12px rgba(43, 36, 30, 0.08);
+  --shadow-hover: 0 6px 20px rgba(43, 36, 30, 0.12);
+  --shadow-modal: 0 12px 32px rgba(43, 36, 30, 0.18);
+
+  /* Container width bounds */
+  --container-max-store: 1200px;
+  --container-max-admin: 1440px;
+
+  /* ==========================================================================
+     Motion & Transitions (150ms to 200ms ease)
+     ========================================================================== */
+  --transition-fast: 150ms ease;
+  --transition-base: 200ms ease;
+  --transition-smooth: 250ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ==========================================================================
+   Dark Mode: deep brown-black background, same accents lightened
+   ========================================================================== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #181411;                 /* Deep brown-black */
+    --color-surface: #231D18;            /* Dark earthy brown surface */
+    --color-surface-subtle: #2C251F;     /* Subtle elevated surface */
+    --color-primary: #528062;            /* Lightened forest green */
+    --color-primary-dark: #3E634B;
+    --color-primary-light: #6C9C7E;
+    --color-secondary: #313C2F;          /* Dark muted sage */
+    --color-secondary-dark: #242E23;
+    --color-secondary-light: #3D4A3A;
+    --color-text: #F3ECE2;               /* Warm off-white text */
+    --color-text-muted: #A89C8F;         /* Muted warm beige text */
+    --color-text-inverse: #181411;
+    --color-accent: #E0734A;             /* Lightened terracotta */
+    --color-accent-hover: #E88864;
+    --color-accent-light: #3A231A;
+    --color-line: #3D352D;               /* Dark brown line */
+    --color-line-light: #4D433A;
+
+    /* Functional Dark Colors */
+    --color-success: #4BA670;
+    --color-success-bg: #1B3524;
+    --color-warning: #DCA543;
+    --color-warning-bg: #3B2D12;
+    --color-danger: #D85C52;
+    --color-danger-bg: #3D1C19;
+    --color-info: #4C8ED9;
+    --color-info-bg: #162B44;
+
+    /* Status Badges Dark */
+    --badge-pending-bg: #332B25;
+    --badge-pending-text: #D5C9BD;
+    --badge-paid-bg: #1F3627;
+    --badge-paid-text: #86C49C;
+    --badge-processing-bg: #382B17;
+    --badge-processing-text: #E5B362;
+    --badge-shipped-bg: #192D42;
+    --badge-shipped-text: #81B2E6;
+    --badge-delivered-bg: #1B3A27;
+    --badge-delivered-text: #7DD099;
+    --badge-cancelled-bg: #3B1B19;
+    --badge-cancelled-text: #E5867F;
+
+    --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.4);
+    --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.55);
+  }
+}
+
+/* ==========================================================================
+   Reduced Motion: Respect prefers-reduced-motion
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,132 @@
+{#
+  Shopping Cart Page: Line items with mushroom thumbnails, weight badges,
+  stepper controls, line totals, and order summary with cold-chain note.
+#}
+{% extends "base.html" %}
+
+{% block title %}Shopping Cart | Dharti Fresh Mushrooms{% endblock %}
+
+{% block content %}
+<div class="section-header" style="margin-bottom:var(--space-5);">
+    <h1 class="section-title">Shopping Cart</h1>
+    <p class="section-subtitle">Fresh harvest reserved for 30 minutes. Hand-packed in cold-chain insulation.</p>
+</div>
+
+<div class="cart-layout">
+    <!-- Cart Items Column (Left) -->
+    <div class="cart-items-card">
+        <!-- Line Item 1: Pearl Oyster 500g -->
+        <div class="cart-item-row">
+            <div class="cart-item-thumb">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2 0-5.52-4.48-10-10-10zM10 15v5a2 2 0 0 0 4 0v-5h-4z"/>
+                </svg>
+            </div>
+            <div class="cart-item-details">
+                <h3 class="cart-item-title">
+                    <a href="{{ url_for('store.product_detail', product_id=1) }}" class="product-name-link">Pearl Oyster Mushrooms</a>
+                </h3>
+                <div class="cart-item-weight">Pack Size: <strong>500 g</strong> • Harvested Today 5:30 AM</div>
+                <form action="{{ url_for('cart.remove_from_cart') }}" method="POST" style="margin:0;">
+                    <input type="hidden" name="product_id" value="1">
+                    <button type="submit" class="cart-item-remove-btn">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        <span>Remove</span>
+                    </button>
+                </form>
+            </div>
+
+            <div class="cart-item-controls">
+                <div class="qty-stepper">
+                    <button type="button" class="qty-btn qty-minus" aria-label="Decrease">&minus;</button>
+                    <input type="number" class="qty-input" value="1" min="1" max="99" aria-label="Quantity">
+                    <button type="button" class="qty-btn qty-plus" aria-label="Increase">&plus;</button>
+                </div>
+                <div class="cart-item-total">₹280</div>
+            </div>
+        </div>
+
+        <!-- Line Item 2: White Button 200g -->
+        <div class="cart-item-row">
+            <div class="cart-item-thumb">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C7.03 2 3 6.03 3 11c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2 0-4.97-4.03-9-9-9zM10.5 14v6a1.5 1.5 0 0 0 3 0v-6h-3z"/>
+                </svg>
+            </div>
+            <div class="cart-item-details">
+                <h3 class="cart-item-title">
+                    <a href="{{ url_for('store.product_detail', product_id=2) }}" class="product-name-link">White Button Mushrooms</a>
+                </h3>
+                <div class="cart-item-weight">Pack Size: <strong>200 g</strong> • Harvested Today 6:00 AM</div>
+                <form action="{{ url_for('cart.remove_from_cart') }}" method="POST" style="margin:0;">
+                    <input type="hidden" name="product_id" value="2">
+                    <button type="submit" class="cart-item-remove-btn">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        <span>Remove</span>
+                    </button>
+                </form>
+            </div>
+
+            <div class="cart-item-controls">
+                <div class="qty-stepper">
+                    <button type="button" class="qty-btn qty-minus" aria-label="Decrease">&minus;</button>
+                    <input type="number" class="qty-input" value="2" min="1" max="99" aria-label="Quantity">
+                    <button type="button" class="qty-btn qty-plus" aria-label="Increase">&plus;</button>
+                </div>
+                <div class="cart-item-total">₹150</div>
+            </div>
+        </div>
+
+        <div style="padding:var(--space-3) var(--space-4); background-color:var(--color-surface-subtle); display:flex; justify-content:space-between; align-items:center;">
+            <a href="{{ url_for('store.home') }}" class="btn btn-sm btn-secondary">
+                <span>&larr; Add more mushrooms</span>
+            </a>
+            <span class="text-muted" style="font-size:var(--text-xs);">2 unique items • 700 g total weight</span>
+        </div>
+    </div>
+
+    <!-- Order Summary Column (Right) -->
+    <aside class="order-summary-card">
+        <h2 class="summary-title">Order Summary</h2>
+
+        <div class="summary-row">
+            <span>Items Subtotal (3 packs)</span>
+            <span style="font-weight:600; color:var(--color-text);">₹430</span>
+        </div>
+
+        <div class="summary-row">
+            <span>Cold-chain packaging & gel packs</span>
+            <span style="font-weight:600; color:var(--color-success);">FREE</span>
+        </div>
+
+        <div class="summary-row">
+            <span>Refrigerated Express Delivery</span>
+            <span style="font-weight:600; color:var(--color-text);">₹49</span>
+        </div>
+
+        <!-- Cold-Chain Slot Delivery Note -->
+        <div class="summary-cold-chain-note">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            <div>
+                <strong>Delivery Promise:</strong> Fresh items are delivered within the chosen slot in insulated cold boxes.
+            </div>
+        </div>
+
+        <div class="summary-row total-row">
+            <span>Total Payable</span>
+            <span>₹479</span>
+        </div>
+
+        <div style="margin-top:var(--space-5);">
+            <a href="{{ url_for('cart.checkout') }}" class="btn btn-accent btn-block" style="font-size:var(--text-base);">
+                <span>Proceed to Checkout</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </a>
+        </div>
+
+        <div style="text-align:center; margin-top:var(--space-3); font-size:var(--text-xs); color:var(--color-text-muted);">
+            <span>🔒 Secure checkout • Guaranteed fresh or 100% refund</span>
+        </div>
+    </aside>
+</div>
+{% endblock %}

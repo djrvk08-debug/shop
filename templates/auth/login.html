@@ -1,0 +1,70 @@
+{#
+  Authentication Login Page: Centered card, accessible form labels,
+  password show/hide toggle, demo admin fill button, and friendly helper links.
+#}
+{% extends "base.html" %}
+
+{% block title %}Sign In | Dharti Fresh Farm{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="auth-logo-badge">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2 0-5.52-4.48-10-10-10zM10 15v5a2 2 0 0 0 4 0v-5h-4z"/>
+                </svg>
+            </div>
+            <h1 class="auth-title">Welcome Back</h1>
+            <p class="auth-subtitle">Sign in to track orders, manage recurring mushroom subscriptions, and access farm accounts.</p>
+        </div>
+
+        <!-- Demo Quick-Fill Box for Quick Testing -->
+        <div style="background-color:var(--color-secondary-light); border:1px solid var(--color-line); border-radius:var(--radius-control); padding:var(--space-3); margin-bottom:var(--space-4); display:flex; justify-content:space-between; align-items:center; gap:var(--space-2);">
+            <div style="font-size:var(--text-xs); color:var(--color-primary-dark); line-height:1.4;">
+                <strong>Demo Admin Account:</strong><br>
+                <code>admin@example.com</code> / <code>admin123</code>
+            </div>
+            <button type="button" id="fill-admin-btn" class="btn btn-sm btn-secondary" style="min-height:34px; font-size:11px; padding:0 10px;">
+                Auto-Fill
+            </button>
+        </div>
+
+        <form action="{{ url_for('auth.login') }}" method="POST">
+            <input type="hidden" name="next" value="{{ next|default(request.args.get('next', '')) }}">
+
+            <div class="form-group">
+                <label class="form-label" for="email">Email Address</label>
+                <input type="email" id="email" name="email" class="form-control" placeholder="name@example.com" value="{{ email|default('admin@example.com') }}" required autocomplete="email">
+                <span class="form-hint">Enter your registered email address.</span>
+            </div>
+
+            <div class="form-group">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-1);">
+                    <label class="form-label" for="password" style="margin:0;">Password</label>
+                    <a href="#" style="font-size:var(--text-xs); color:var(--color-primary); font-weight:600;">Forgot password?</a>
+                </div>
+                <div class="password-input-wrapper">
+                    <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" value="{{ 'admin123' if not email else '' }}" required autocomplete="current-password">
+                    <button type="button" class="password-toggle-btn" aria-label="Show password">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:var(--space-4);">
+                <input type="checkbox" id="remember" name="remember" style="width:16px; height:16px; cursor:pointer;" checked>
+                <label for="remember" style="font-size:var(--text-xs); color:var(--color-text-muted); cursor:pointer;">Keep me signed in on this device</label>
+            </div>
+
+            <div style="margin-top:var(--space-4);">
+                <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+            </div>
+        </form>
+
+        <div class="auth-footer">
+            <p>New to Dharti Mushrooms? <a href="{{ url_for('auth.register') }}" style="font-weight:700; color:var(--color-accent);">Create a new account</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,237 @@
+{#
+  Admin Dashboard: Responsive Left Sidebar (Desktop) / Topbar Toggle (Mobile),
+  Stat Cards, Warning Panels (Low Stock & Delayed Delivery), and Recent Orders Table.
+#}
+{% extends "base.html" %}
+
+{% block title %}Farm Admin Dashboard | Dharti Mushrooms{% endblock %}
+
+{% block content %}
+<!-- Mobile Admin Bar with Sidebar Toggle -->
+<div class="admin-mobile-bar">
+    <span class="admin-mobile-title">Farm Admin Portal</span>
+    <button type="button" class="admin-sidebar-toggle-btn" aria-label="Toggle admin sidebar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        <span>Menu</span>
+    </button>
+</div>
+
+<div class="admin-layout-container">
+    <!-- Left Sidebar on Desktop -->
+    <aside class="admin-sidebar">
+        <div class="admin-sidebar-header">
+            <span class="admin-sidebar-title">Operations Portal</span>
+        </div>
+        <ul class="admin-sidebar-nav">
+            <li class="admin-nav-item active">
+                <a href="{{ url_for('admin.dashboard') }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="admin-nav-item">
+                <a href="{{ url_for('admin.products') }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2 0-5.52-4.48-10-10-10zM10 15v5a2 2 0 0 0 4 0v-5h-4z"/></svg>
+                    <span>Products (8)</span>
+                </a>
+            </li>
+            <li class="admin-nav-item">
+                <a href="{{ url_for('admin.orders') }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                    <span>Orders (24)</span>
+                </a>
+            </li>
+            <li class="admin-nav-item">
+                <a href="{{ url_for('admin.shipments') }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                    <span>Shipments (4 Active)</span>
+                </a>
+            </li>
+            <li class="admin-nav-item">
+                <a href="{{ url_for('admin.users') }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    <span>Staff & Users</span>
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="admin-main-content">
+        <div class="admin-page-header">
+            <div>
+                <h1 class="admin-page-title">Morning Operations Overview</h1>
+                <p class="text-muted" style="font-size:var(--text-sm);">Live status of today's harvest dispatch, inventory, and temperature-controlled logistics.</p>
+            </div>
+            <a href="{{ url_for('admin.product_create') }}" class="btn btn-primary btn-sm">+ Add New Harvest</a>
+        </div>
+
+        <!-- 4 Stat Cards: Today's sales, Orders to pack, Out for delivery, Low stock -->
+        <div class="admin-stats-grid">
+            <!-- Stat 1: Sales -->
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon stat-icon-sales">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                </div>
+                <div class="admin-stat-details">
+                    <span class="admin-stat-label">Today's Sales</span>
+                    <span class="admin-stat-val">₹24,850</span>
+                    <span class="admin-stat-note text-success">+18% vs yesterday</span>
+                </div>
+            </div>
+
+            <!-- Stat 2: Orders to Pack -->
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon stat-icon-orders">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                </div>
+                <div class="admin-stat-details">
+                    <span class="admin-stat-label">Orders to Pack</span>
+                    <span class="admin-stat-val">18 Orders</span>
+                    <span class="admin-stat-note">Morning batch 7-10 AM</span>
+                </div>
+            </div>
+
+            <!-- Stat 3: Out for Delivery -->
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon stat-icon-delivery">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                </div>
+                <div class="admin-stat-details">
+                    <span class="admin-stat-label">Out for Delivery</span>
+                    <span class="admin-stat-val">4 Cold Vans</span>
+                    <span class="admin-stat-note text-success">All sensors &lt; 4.2°C</span>
+                </div>
+            </div>
+
+            <!-- Stat 4: Low Stock -->
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon stat-icon-warning">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                </div>
+                <div class="admin-stat-details">
+                    <span class="admin-stat-label">Low Stock Alert</span>
+                    <span class="admin-stat-val">2 Varieties</span>
+                    <span class="admin-stat-note" style="color:var(--color-warning);">Under 10 packs left</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Warning Panels (Low-Stock and Delayed-Delivery with warning styling) -->
+        <div class="admin-warning-panels">
+            <!-- Low-Stock Panel -->
+            <div class="admin-warning-panel low-stock">
+                <div class="warning-panel-header">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    <span>Critical Fresh Stock Alerts (&lt; 10 Packs)</span>
+                </div>
+                <div class="warning-panel-content">
+                    <ul class="warning-panel-list">
+                        <li>
+                            <span>Fresh Shiitake Mushrooms (200g)</span>
+                            <span class="badge badge-low-stock">6 packs left</span>
+                        </li>
+                        <li>
+                            <span>Royal King Oyster (500g)</span>
+                            <span class="badge badge-low-stock">8 packs left</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Delayed-Delivery / Route Alert Panel -->
+            <div class="admin-warning-panel delayed-delivery">
+                <div class="warning-panel-header">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    <span>Cold-Chain Transit Notice: Route #2</span>
+                </div>
+                <div class="warning-panel-content">
+                    Cold Van #02 reported 15 min delay due to metro rail construction on Outer Ring Road. Vehicle internal temperature is steady at <strong>3.7°C</strong>. All customer ETAs auto-updated.
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Customer Orders Table with Sticky Header & Horizontal Scroll Wrapper -->
+        <div class="card" style="margin-bottom:var(--space-6);">
+            <div class="card-header">
+                <h3 style="font-family:var(--font-serif); font-size:var(--text-base); margin:0;">Today's Active Orders</h3>
+                <a href="{{ url_for('admin.orders') }}" class="btn btn-sm btn-secondary">View All Orders</a>
+            </div>
+
+            <div class="table-responsive" style="margin:0; border:none; border-radius:0;">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Order #</th>
+                            <th>Customer & Locality</th>
+                            <th>Items & Weight</th>
+                            <th>Delivery Window</th>
+                            <th>Status</th>
+                            <th class="text-right">Total (₹)</th>
+                            <th class="text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong style="font-family:monospace;">#ORD-8101</strong></td>
+                            <td>
+                                <div>Chef Anand Kumar</div>
+                                <div style="font-size:var(--text-xs); color:var(--color-text-muted);">Koramangala, Bengaluru</div>
+                            </td>
+                            <td>Pearl Oyster (500g), Button (200g &times; 2)</td>
+                            <td><span class="badge badge-cold">Morning 7-10 AM</span></td>
+                            <td><span class="badge badge-shipped">In Transit (3.8°C)</span></td>
+                            <td class="text-right"><strong>₹479</strong></td>
+                            <td class="text-right">
+                                <a href="{{ url_for('tracking.track_shipment', tracking_number='TRK-TEST12345') }}" class="btn btn-sm btn-secondary">Track</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong style="font-family:monospace;">#ORD-8102</strong></td>
+                            <td>
+                                <div>Bistro Olive (Chef Meera)</div>
+                                <div style="font-size:var(--text-xs); color:var(--color-text-muted);">Indiranagar 100ft Rd</div>
+                            </td>
+                            <td>King Oyster (1kg &times; 3), Shiitake (500g &times; 2)</td>
+                            <td><span class="badge badge-cold">Morning 7-10 AM</span></td>
+                            <td><span class="badge badge-processing">Packed & Chilled</span></td>
+                            <td class="text-right"><strong>₹3,530</strong></td>
+                            <td class="text-right">
+                                <button type="button" class="btn btn-sm btn-primary">Dispatch</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong style="font-family:monospace;">#ORD-8103</strong></td>
+                            <td>
+                                <div>Rahul Varma</div>
+                                <div style="font-size:var(--text-xs); color:var(--color-text-muted);">HSR Layout Sector 2</div>
+                            </td>
+                            <td>Milky Mushrooms (500g), Umami Powder (100g)</td>
+                            <td><span class="badge badge-pending">Afternoon 12-3 PM</span></td>
+                            <td><span class="badge badge-paid">Paid (UPI)</span></td>
+                            <td class="text-right"><strong>₹509</strong></td>
+                            <td class="text-right">
+                                <button type="button" class="btn btn-sm btn-secondary">Pack</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong style="font-family:monospace;">#ORD-8104</strong></td>
+                            <td>
+                                <div>Dr. Shalini Rao</div>
+                                <div style="font-size:var(--text-xs); color:var(--color-text-muted);">Jayanagar 4th Block</div>
+                            </td>
+                            <td>Dried Shiitake Mix (250g)</td>
+                            <td><span class="badge badge-pending">Evening 5-8 PM</span></td>
+                            <td><span class="badge badge-pending">Pending Payment</span></td>
+                            <td class="text-right"><strong>₹729</strong></td>
+                            <td class="text-right">
+                                <button type="button" class="btn btn-sm btn-secondary">View</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

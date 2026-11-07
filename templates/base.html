@@ -1,0 +1,260 @@
+{#
+  Base layout template providing navigation bar, pincode checker,
+  dismissible flash notifications with icons, and farm footer.
+#}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#214b3a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Dharti Fresh">
+    <title>{% block title %}Dharti Fresh Mushrooms | Farm to Door{% endblock %}</title>
+
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/pwa-icon.svg') }}">
+
+    <!-- Google Fonts for warm serif headings and clean sans body -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- CSS Architecture (Linked in strict required sequence) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/store.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tracking.css') }}">
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- Top Announcement Bar -->
+    <div class="top-bar-notice">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <span><strong>Cold-Chain Farm Harvest</strong> • Harvested at dawn, packed in insulated eco-boxes, delivered cold to your kitchen</span>
+    </div>
+
+    <!-- Sticky Header -->
+    <header class="site-header">
+        <div class="container">
+            <nav class="navbar">
+                <!-- Brand / Logo -->
+                <a href="{{ url_for('store.home') }}" class="nav-brand">
+                    <div class="nav-brand-logo">
+                        <!-- Custom Botanical Mushroom SVG Logo -->
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2 0-5.52-4.48-10-10-10zM10 15v5a2 2 0 0 0 4 0v-5h-4z"/>
+                        </svg>
+                    </div>
+                    <div class="nav-brand-text">
+                        <span class="nav-brand-title">Dharti Mushrooms</span>
+                        <span class="nav-brand-subtitle">Fresh Farm Harvest</span>
+                    </div>
+                </a>
+
+                <!-- Search Box -->
+                <div class="nav-search">
+                    <form action="{{ url_for('store.search') }}" method="GET" class="search-form">
+                        <span class="search-icon-btn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        </span>
+                        <input type="text" name="q" class="search-input" placeholder="Search oyster, shiitake, button..." value="{{ search_query|default('') }}">
+                        <button type="submit" class="search-submit-btn">Search</button>
+                    </form>
+                </div>
+
+                <!-- Navigation Actions -->
+                <div class="nav-actions">
+                    <a href="{{ url_for('store.home') }}" class="nav-link">Shop</a>
+                    <a href="{{ url_for('tracking.track_shipment', tracking_number='TRK-TEST12345') }}" class="nav-link" title="Cold-chain delivery tracking">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                        <span>Track</span>
+                    </a>
+
+                    <!-- Cart with count badge -->
+                    <a href="{{ url_for('cart.view_cart') }}" class="cart-nav-btn" aria-label="Shopping Cart">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                        <span class="cart-badge">{{ session.get('cart', {})|length if session.get('cart') else 2 }}</span>
+                    </a>
+
+                    <!-- Auth / Account -->
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.is_admin %}
+                            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-sm btn-secondary">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                                <span>Admin</span>
+                            </a>
+                        {% endif %}
+                        <a href="{{ url_for('auth.logout') }}" class="nav-link" title="Sign Out">Logout</a>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="nav-link">Sign In</a>
+                    {% endif %}
+
+                </div>
+            </nav>
+        </div>
+
+        <!-- Mobile Drawer -->
+        <div id="mobile-drawer" class="mobile-drawer" aria-hidden="true">
+            <form action="{{ url_for('store.search') }}" method="GET" class="search-form">
+                <input type="text" name="q" class="search-input" placeholder="Search mushrooms..." value="{{ search_query|default('') }}">
+                <button type="submit" class="search-submit-btn">Search</button>
+            </form>
+            <a href="{{ url_for('store.home') }}" class="nav-link">Fresh Mushrooms</a>
+            <a href="{{ url_for('tracking.track_shipment', tracking_number='TRK-TEST12345') }}" class="nav-link">Track Delivery</a>
+            <a href="{{ url_for('cart.view_cart') }}" class="nav-link">Cart ({{ session.get('cart', {})|length if session.get('cart') else 2 }})</a>
+            {% if current_user.is_authenticated %}
+                {% if current_user.is_admin %}
+                    <a href="{{ url_for('admin.dashboard') }}" class="nav-link">Admin Dashboard</a>
+                {% endif %}
+                <a href="{{ url_for('auth.logout') }}" class="nav-link">Logout</a>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}" class="nav-link">Login</a>
+                <a href="{{ url_for('auth.register') }}" class="nav-link">Register</a>
+            {% endif %}
+        </div>
+
+        <!-- Pincode Delivery Checker Bar -->
+        <div class="pincode-strip">
+            <div class="container pincode-container">
+                <div class="pincode-label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    <span>Check cold-chain delivery to your pincode:</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <form class="pincode-form">
+                        <input type="text" class="pincode-input" placeholder="Enter 6-digit PIN" maxlength="6" value="560001" required>
+                        <button type="submit" class="pincode-btn">Check</button>
+                    </form>
+                    <span class="pincode-result" style="display:none;"></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Page Content -->
+    <main class="site-main">
+        <div class="container">
+            <!-- Dismissible Flash Notifications with SVG Icons -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <section class="flash-messages" aria-live="polite">
+                        {% for category, message in messages %}
+                            <div class="flash flash-{{ category }}">
+                                <div class="flash-icon">
+                                    {% if category == 'success' %}
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                                    {% elif category == 'warning' %}
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                                    {% elif category == 'danger' %}
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                                    {% else %}
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                                    {% endif %}
+                                </div>
+                                <div class="flash-content">{{ message }}</div>
+                                <button type="button" class="flash-close-btn" aria-label="Dismiss alert">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                </button>
+                            </div>
+                        {% endfor %}
+                    </section>
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <nav class="mobile-bottom-nav" aria-label="Mobile navigation">
+        <a href="{{ url_for('store.home') }}" class="mobile-bottom-nav-item{% if request.endpoint == 'store.home' %} active{% endif %}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>
+            <span>Shop</span>
+        </a>
+        <a href="{{ url_for('tracking.track_shipment', tracking_number='TRK-TEST12345') }}" class="mobile-bottom-nav-item{% if request.endpoint == 'tracking.track_shipment' %} active{% endif %}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+            <span>Track</span>
+        </a>
+        <a href="{{ url_for('cart.view_cart') }}" class="mobile-bottom-nav-item{% if request.endpoint == 'cart.view_cart' %} active{% endif %}">
+            <span class="mobile-bottom-nav-icon-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                <span class="mobile-bottom-nav-badge">{{ session.get('cart', {})|length if session.get('cart') else 2 }}</span>
+            </span>
+            <span>Cart</span>
+        </a>
+        <a href="{{ url_for('auth.login') if not current_user.is_authenticated else url_for('auth.logout') }}" class="mobile-bottom-nav-item{% if request.endpoint in ['auth.login', 'auth.logout'] %} active{% endif %}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg>
+            <span>{{ 'Account' if current_user.is_authenticated else 'Sign in' }}</span>
+        </a>
+    </nav>
+
+    <div id="cart-toast" class="cart-toast" role="status" aria-live="polite" aria-atomic="true" hidden>
+        <div class="cart-toast-copy">
+            <strong id="cart-toast-message"></strong>
+            <a href="{{ url_for('cart.view_cart') }}" class="cart-toast-action">View cart</a>
+        </div>
+    </div>
+
+    <!-- Global Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <!-- Col 1: Delivery Promise -->
+                <div class="footer-col">
+                    <h4>Dharti Mushroom Farm</h4>
+                    <p class="text-muted">Specialty mushroom cultivation with climate-controlled fruiting rooms. Farm-fresh harvests delivered direct to home cooks and chef tables.</p>
+                    <div class="footer-promise-card">
+                        <div class="footer-promise-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                            <span>Our Cold-Chain Guarantee</span>
+                        </div>
+                        <p class="footer-promise-text">Harvested in the morning, packed in insulated eco-boxes with ice packs, and transported at 2°C - 5°C. Uncompromising freshness guaranteed.</p>
+                    </div>
+                </div>
+
+                <!-- Col 2: Storage Tips & Links -->
+                <div class="footer-col">
+                    <h4>Mushroom Care</h4>
+                    <ul class="footer-links">
+                        <li><a href="#storage-tips">Storage Tips: Keep in paper bag, refrigerate</a></li>
+                        <li><a href="#shelf-life">Shelf Life Guide: Best within 4 days</a></li>
+                        <li><a href="{{ url_for('tracking.track_shipment', tracking_number='TRK-TEST12345') }}">Cold-Chain Delivery Tracking</a></li>
+                        <li><a href="{{ url_for('store.home') }}">Cooking Ideas & Pairings</a></li>
+                        <li><a href="{{ url_for('cart.view_cart') }}">Shopping Cart</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 3: Contact & Delivery Hub -->
+                <div class="footer-col">
+                    <h4>Farm & Orders</h4>
+                    <div class="footer-contact-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                        <span>WhatsApp / Call: +91 98765 43210</span>
+                    </div>
+                    <div class="footer-contact-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                        <span>hello@dhartimushrooms.com</span>
+                    </div>
+                    <div class="footer-contact-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        <span>Morning Delivery Slots: 7-10 AM, 12-3 PM, 5-8 PM</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2026 Dharti Fresh Mushroom Farm. Organic & Cold-Chain Delivery. Prices in INR (₹).</p>
+                <p>Designed with earthy farm care. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Minimal Vanilla JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

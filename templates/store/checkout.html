@@ -1,0 +1,188 @@
+{#
+  Checkout Page: Single-column grouped fieldsets (Contact, Address, Delivery Slot Picker),
+  radio cards with disabled past slots, and inline validation.
+#}
+{% extends "base.html" %}
+
+{% block title %}Checkout | Dharti Fresh Mushrooms{% endblock %}
+
+{% block content %}
+<div class="section-header" style="margin-bottom:var(--space-5);">
+    <h1 class="section-title">Delivery Checkout</h1>
+    <p class="section-subtitle">Please enter your address and choose a cold-chain delivery window.</p>
+</div>
+
+<div class="checkout-layout">
+    <!-- Form Column (Left) -->
+    <div class="checkout-card">
+        <form action="{{ url_for('cart.checkout') }}" method="POST" novalidate>
+            <!-- Fieldset 1: Contact Details -->
+            <fieldset class="checkout-fieldset">
+                <legend class="checkout-legend">
+                    <span class="fieldset-num">1</span>
+                    <span>Contact Information</span>
+                </legend>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label" for="full_name">Full Name *</label>
+                        <input type="text" id="full_name" name="full_name" class="form-control" placeholder="Chef Anand Kumar" value="Anand Kumar" required>
+                        <span class="form-hint">For package receipt and recipient identification.</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="phone">Phone Number (For Delivery SMS) *</label>
+                        <input type="tel" id="phone" name="phone" class="form-control" placeholder="9876543210" value="9876543210" pattern="[0-9]{10}" required>
+                        <span class="form-hint">Driver will call or WhatsApp on arrival.</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="email">Email Address *</label>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="anand@example.com" value="anand@example.com" required>
+                    <span class="form-hint">Cold-chain dispatch confirmation and receipt will be sent here.</span>
+                </div>
+            </fieldset>
+
+            <!-- Fieldset 2: Delivery Address -->
+            <fieldset class="checkout-fieldset">
+                <legend class="checkout-legend">
+                    <span class="fieldset-num">2</span>
+                    <span>Delivery Address</span>
+                </legend>
+
+                <div class="form-group">
+                    <label class="form-label" for="address_line1">Flat / House No., Building Name *</label>
+                    <input type="text" id="address_line1" name="address_line1" class="form-control" placeholder="Flat 402, Green Meadows Apartment" value="Flat 402, Green Meadows Apartment" required>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label" for="address_line2">Street / Locality</label>
+                        <input type="text" id="address_line2" name="address_line2" class="form-control" placeholder="12th Main, Koramangala 4th Block" value="12th Main, Koramangala 4th Block">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="landmark">Landmark (Optional)</label>
+                        <input type="text" id="landmark" name="landmark" class="form-control" placeholder="Near Sony World Signal" value="Near Sony World Signal">
+                    </div>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label" for="city">City *</label>
+                        <input type="text" id="city" name="city" class="form-control" value="Bengaluru" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="pincode">Pincode *</label>
+                        <input type="text" id="pincode" name="pincode" class="form-control" value="560034" pattern="[0-9]{6}" required>
+                        <span class="form-hint" style="color:var(--color-success); font-weight:600;">✓ Active Cold-Chain Zone (Morning Slot Available)</span>
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- Fieldset 3: Delivery Slot Picker (Radio Cards with Disabled State) -->
+            <fieldset class="checkout-fieldset">
+                <legend class="checkout-legend">
+                    <span class="fieldset-num">3</span>
+                    <span>Cold-Chain Delivery Slot (Tomorrow)</span>
+                </legend>
+                <p style="font-size:var(--text-xs); color:var(--color-text-muted); margin-bottom:var(--space-3);">
+                    Mushrooms are chilled and dispatched in dedicated refrigerated electric vans for temperature control.
+                </p>
+
+                <div class="radio-card-grid">
+                    <!-- Slot 1: Morning (Recommended & Active) -->
+                    <label class="radio-card selected">
+                        <input type="radio" name="delivery_slot" value="morning" checked>
+                        <div class="radio-card-header">
+                            <span class="radio-card-title">Morning Slot</span>
+                            <span class="badge badge-harvest">Fresh Dawn</span>
+                        </div>
+                        <div style="font-family:var(--font-serif); font-size:var(--text-base); font-weight:700; color:var(--color-primary); margin-bottom:2px;">
+                            7:00 AM – 10:00 AM
+                        </div>
+                        <div class="radio-card-desc">Picked at dawn & delivered cold before lunch preparation.</div>
+                    </label>
+
+                    <!-- Slot 2: Afternoon -->
+                    <label class="radio-card">
+                        <input type="radio" name="delivery_slot" value="afternoon">
+                        <div class="radio-card-header">
+                            <span class="radio-card-title">Afternoon Slot</span>
+                            <span class="badge badge-cold">Cold Van</span>
+                        </div>
+                        <div style="font-family:var(--font-serif); font-size:var(--text-base); font-weight:700; color:var(--color-primary); margin-bottom:2px;">
+                            12:00 PM – 3:00 PM
+                        </div>
+                        <div class="radio-card-desc">Chilled transport for afternoon deliveries.</div>
+                    </label>
+
+                    <!-- Slot 3: Evening (Disabled state demonstration for past/full slots) -->
+                    <label class="radio-card disabled">
+                        <input type="radio" name="delivery_slot" value="evening" disabled>
+                        <div class="radio-card-header">
+                            <span class="radio-card-title">Evening Slot</span>
+                            <span class="badge" style="background:#E2DDD4; color:#6B6157;">Slot Full</span>
+                        </div>
+                        <div style="font-family:var(--font-serif); font-size:var(--text-base); font-weight:700; color:var(--color-text-muted); margin-bottom:2px;">
+                            5:00 PM – 8:00 PM
+                        </div>
+                        <div class="radio-card-desc">Capacity booked for evening restaurant orders.</div>
+                    </label>
+                </div>
+            </fieldset>
+
+            <div style="margin-top:var(--space-6);">
+                <button type="submit" class="btn btn-accent btn-block" style="min-height:52px; font-size:var(--text-base);">
+                    <span>Confirm & Place Order (Pay on Delivery / UPI)</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Sticky Order Summary Column (Right) -->
+    <aside class="order-summary-card">
+        <h2 class="summary-title">Your Fresh Order</h2>
+
+        <div style="display:flex; flex-direction:column; gap:var(--space-3); margin-bottom:var(--space-4);">
+            <div style="display:flex; justify-content:space-between; font-size:var(--text-sm);">
+                <div>
+                    <strong>Pearl Oyster Mushrooms</strong>
+                    <div style="font-size:var(--text-xs); color:var(--color-text-muted);">500 g &times; 1</div>
+                </div>
+                <div style="font-weight:600;">₹280</div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; font-size:var(--text-sm);">
+                <div>
+                    <strong>White Button Mushrooms</strong>
+                    <div style="font-size:var(--text-xs); color:var(--color-text-muted);">200 g &times; 2</div>
+                </div>
+                <div style="font-weight:600;">₹150</div>
+            </div>
+        </div>
+
+        <div class="summary-row">
+            <span>Packaging & Gel Ice</span>
+            <span class="text-success" style="font-weight:600;">FREE</span>
+        </div>
+
+        <div class="summary-row">
+            <span>Refrigerated Delivery</span>
+            <span style="font-weight:600;">₹49</span>
+        </div>
+
+        <div class="summary-row total-row">
+            <span>Total Payable</span>
+            <span>₹479</span>
+        </div>
+
+        <div style="background-color:var(--color-secondary-light); border-radius:var(--radius-control); padding:var(--space-3); margin-top:var(--space-4); font-size:var(--text-xs); color:var(--color-primary-dark);">
+            🌱 <strong>Cold-Chain Guarantee:</strong> Packed in insulated eco-punnets with temperature data-loggers to ensure farm freshness upon arrival.
+        </div>
+    </aside>
+</div>
+{% endblock %}

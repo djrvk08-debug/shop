@@ -1,0 +1,437 @@
+/**
+ * Delivery Tracking CSS: Mobile-First Responsive Layout
+ * Summary Card, Progress Bar, Vertical Cold-Chain Timeline, and Exception States.
+ *
+ * BREAKPOINTS:
+ * - 600px: Summary card row transition
+ * - 900px: Timeline wider spacing
+ */
+
+/* ==========================================================================
+   Header Summary Card
+   Phones (< 600px): Stacked items. >= 600px: Row layout.
+   ========================================================================== */
+.tracking-summary-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-soft);
+  margin-bottom: var(--space-6);
+}
+
+@media (min-width: 600px) {
+  .tracking-summary-card {
+    padding: var(--space-5);
+  }
+}
+
+.tracking-summary-top {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-line);
+}
+
+@media (min-width: 600px) {
+  .tracking-summary-top {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.tracking-number-badge {
+  display: flex;
+  flex-direction: column;
+  overflow-wrap: anywhere;
+}
+
+.tracking-label {
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  margin-bottom: 2px;
+}
+
+.tracking-code {
+  font-family: monospace;
+  font-size: clamp(1rem, 0.9rem + 0.5vw, 1.25rem);
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  overflow-wrap: anywhere;
+}
+
+/* Meta Details Grid: Stacked phones, 3-column row from 600px */
+.tracking-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+@media (min-width: 600px) {
+  .tracking-meta-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
+  }
+}
+
+.tracking-meta-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.tracking-meta-icon {
+  width: var(--touch-target-min);
+  height: var(--touch-target-min);
+  border-radius: var(--radius-control);
+  background-color: var(--color-secondary-light);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.tracking-meta-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.tracking-meta-label {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-bottom: 2px;
+}
+
+.tracking-meta-val {
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+}
+
+/* Progress Bar (Scales to 100% of container) */
+.tracking-progress-wrapper {
+  margin-top: var(--space-2);
+  width: 100%;
+}
+
+.tracking-progress-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+  gap: var(--space-2);
+}
+
+.tracking-progress-track {
+  width: 100%;
+  height: 10px;
+  background-color: var(--color-line);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.tracking-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-accent) 100%);
+  border-radius: var(--radius-pill);
+  transition: width 400ms ease;
+  max-width: 100%;
+}
+
+/* ==========================================================================
+   Vertical Delivery Timeline
+   Shrink spacing on phones, more room on large screens
+   ========================================================================== */
+.timeline-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-soft);
+  margin-bottom: var(--space-6);
+}
+
+@media (min-width: 600px) {
+  .timeline-card {
+    padding: var(--space-5);
+  }
+}
+
+.timeline-title {
+  font-family: var(--font-serif);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  margin-bottom: var(--space-5);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.timeline-list {
+  list-style: none;
+  position: relative;
+  padding-left: 24px;
+  margin: 0;
+}
+
+@media (min-width: 600px) {
+  .timeline-list {
+    padding-left: 32px;
+  }
+}
+
+/* Timeline Vertical Line */
+.timeline-list::before {
+  content: "";
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  left: 9px;
+  width: 2px;
+  background-color: var(--color-line);
+  z-index: 1;
+}
+
+@media (min-width: 600px) {
+  .timeline-list::before {
+    left: 11px;
+  }
+}
+
+.timeline-step {
+  position: relative;
+  padding-bottom: var(--space-5);
+  z-index: 2;
+}
+
+@media (min-width: 600px) {
+  .timeline-step {
+    padding-bottom: var(--space-6);
+  }
+}
+
+.timeline-step:last-child {
+  padding-bottom: 0;
+}
+
+/* Timeline Dot / Node */
+.timeline-dot {
+  position: absolute;
+  left: -24px;
+  top: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-pill);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-line);
+  color: var(--color-text-muted);
+  transition: all var(--transition-base);
+}
+
+@media (min-width: 600px) {
+  .timeline-dot {
+    left: -32px;
+    width: 24px;
+    height: 24px;
+  }
+}
+
+.timeline-dot svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Step 1: Completed State (Green) */
+.timeline-step.completed .timeline-dot {
+  background-color: var(--color-success);
+  border-color: var(--color-success);
+  color: #FFFFFF;
+  box-shadow: 0 0 0 3px var(--color-success-bg);
+}
+
+.timeline-step.completed .timeline-step-title {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+/* Step 2: Current State (Terracotta with Pulse) */
+.timeline-step.current .timeline-dot {
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #FFFFFF;
+  box-shadow: 0 0 0 4px var(--color-accent-light);
+  animation: pulse-ring 2s infinite;
+}
+
+.timeline-step.current .timeline-step-title {
+  color: var(--color-accent);
+  font-weight: 700;
+  font-size: var(--text-base);
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(196, 87, 47, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(196, 87, 47, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(196, 87, 47, 0);
+  }
+}
+
+/* Step 3: Upcoming State (Gray) */
+.timeline-step.upcoming .timeline-dot {
+  background-color: var(--color-surface);
+  border-color: var(--color-line);
+  color: transparent;
+}
+
+.timeline-step.upcoming .timeline-step-title {
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+/* Timeline Content */
+.timeline-step-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 4px;
+}
+
+@media (min-width: 600px) {
+  .timeline-step-header {
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+}
+
+.timeline-step-title {
+  font-size: var(--text-base);
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+}
+
+.timeline-step-time {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.timeline-step-location {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-1);
+  overflow-wrap: anywhere;
+}
+
+.timeline-step-location svg {
+  width: 14px;
+  height: 14px;
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.timeline-step-note {
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  background-color: var(--color-surface-subtle);
+  border-radius: var(--radius-control);
+  padding: var(--space-2) var(--space-3);
+  margin-top: var(--space-1);
+  display: block;
+  overflow-wrap: anywhere;
+  max-width: 70ch;
+}
+
+/* ==========================================================================
+   Exception States: Failed Attempt & Returned to Hub
+   ========================================================================== */
+.timeline-alert {
+  border-radius: var(--radius-card);
+  padding: var(--space-4);
+  margin-bottom: var(--space-5);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.timeline-alert-icon {
+  width: var(--touch-target-min);
+  height: var(--touch-target-min);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.timeline-alert-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.timeline-alert-title {
+  font-weight: 700;
+  font-size: var(--text-base);
+  margin-bottom: 2px;
+}
+
+.timeline-alert-msg {
+  font-size: var(--text-sm);
+  line-height: 1.45;
+  margin-bottom: var(--space-2);
+  max-width: 70ch;
+}
+
+.timeline-alert-action {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.timeline-alert-warning {
+  background-color: var(--color-warning-bg);
+  border: 1px solid rgba(183, 121, 31, 0.35);
+  color: #7A4F10;
+}
+
+.timeline-alert-warning .timeline-alert-icon {
+  background-color: #F8E2BE;
+  color: var(--color-warning);
+}
+
+.timeline-alert-danger {
+  background-color: var(--color-danger-bg);
+  border: 1px solid rgba(179, 57, 47, 0.35);
+  color: #7E241D;
+}
+
+.timeline-alert-danger .timeline-alert-icon {
+  background-color: #FAD3D0;
+  color: var(--color-danger);
+}

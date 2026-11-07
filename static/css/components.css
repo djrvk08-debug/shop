@@ -1,0 +1,726 @@
+/**
+ * Reusable Responsive UI Components:
+ * Buttons, Segmented Controls, Steppers, Cards, Badges, Flash Alerts,
+ * Form Controls, Responsive Card Tables, and Radio Cards.
+ */
+
+/* ==========================================================================
+   Buttons (Controls: 10px radius, >= 44x44px touch targets)
+   ========================================================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target-control); /* 48px standard touch target */
+  padding: 0 var(--space-5);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: var(--radius-control);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: #FFFFFF;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-dark);
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(47, 79, 58, 0.25);
+  transform: translateY(-1px);
+}
+
+.btn-accent {
+  background-color: var(--color-accent);
+  color: #FFFFFF;
+}
+
+.btn-accent:hover {
+  background-color: var(--color-accent-hover);
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(196, 87, 47, 0.25);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background-color: var(--color-secondary-light);
+  color: var(--color-primary);
+  border-color: var(--color-line);
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-secondary);
+  color: var(--color-primary-dark);
+  border-color: var(--color-secondary-dark);
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.btn-outline:hover {
+  background-color: var(--color-primary);
+  color: #FFFFFF;
+}
+
+.btn-sm {
+  min-height: var(--touch-target-min); /* Accessible 44px min tap area */
+  padding: 0 var(--space-3);
+  font-size: var(--text-sm);
+  border-radius: var(--radius-control);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn:disabled,
+.btn.disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ==========================================================================
+   Segmented Controls (Pack Size / Weight Selector: 200g, 500g, 1kg)
+   Must wrap on small cards to prevent text clipping
+   ========================================================================== */
+.segmented-control {
+  display: flex;
+  flex-wrap: wrap; /* Wrap buttons on narrow cards */
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-control);
+  padding: 3px;
+  gap: 4px;
+  width: 100%;
+}
+
+.segmented-btn {
+  flex: 1 1 calc(33.333% - 4px); /* Flexibly wrap to next line if width is tight */
+  min-width: 60px;
+  min-height: var(--touch-target-min); /* 44px tap target */
+  padding: 0 var(--space-2);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.segmented-btn:hover {
+  color: var(--color-text);
+  background-color: rgba(220, 229, 216, 0.4);
+}
+
+.segmented-btn.active {
+  background-color: var(--color-surface);
+  color: var(--color-primary);
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-line-light);
+}
+
+/* ==========================================================================
+   Quantity Stepper (- / +)
+   44x44px Minimum Tap Targets
+   ========================================================================== */
+.qty-stepper {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-control);
+  min-height: var(--touch-target-control);
+  padding: 2px;
+}
+
+.qty-btn {
+  width: var(--touch-target-min);
+  height: var(--touch-target-min);
+  background: none;
+  border: none;
+  color: var(--color-text);
+  font-size: 1.25rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color var(--transition-fast);
+}
+
+.qty-btn:hover {
+  background-color: var(--color-secondary-light);
+  color: var(--color-primary);
+}
+
+.qty-input {
+  width: 48px;
+  min-height: var(--touch-target-min);
+  border: none;
+  background: transparent;
+  text-align: center;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text);
+  -moz-appearance: textfield;
+}
+
+.qty-input::-webkit-outer-spin-button,
+.qty-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* ==========================================================================
+   Cards (Radius: 16px, Soft Shadows)
+   ========================================================================== */
+.card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+  transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+}
+
+.card:hover {
+  border-color: var(--color-secondary-dark);
+}
+
+.card-body {
+  padding: var(--space-4);
+}
+
+.card-header {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--color-line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.card-footer {
+  padding: var(--space-4);
+  border-top: 1px solid var(--color-line);
+  background-color: var(--color-surface-subtle);
+}
+
+/* ==========================================================================
+   Badges & Tags (Font size >= 14px accessible minimum)
+   ========================================================================== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 4px var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.badge svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* Custom Domain Badges */
+.badge-harvest {
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
+  border: 1px solid rgba(46, 125, 79, 0.25);
+}
+
+.badge-cold {
+  background-color: var(--color-info-bg);
+  color: var(--color-info);
+  border: 1px solid rgba(43, 108, 176, 0.25);
+}
+
+.badge-low-stock {
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning);
+  border: 1px solid rgba(183, 121, 31, 0.3);
+}
+
+.badge-out-of-stock {
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger);
+  border: 1px solid rgba(179, 57, 47, 0.25);
+}
+
+/* Lifecycle Badges */
+.badge-pending {
+  background-color: var(--badge-pending-bg);
+  color: var(--badge-pending-text);
+}
+
+.badge-paid {
+  background-color: var(--badge-paid-bg);
+  color: var(--badge-paid-text);
+}
+
+.badge-processing {
+  background-color: var(--badge-processing-bg);
+  color: var(--badge-processing-text);
+}
+
+.badge-shipped,
+.badge-in_transit {
+  background-color: var(--badge-shipped-bg);
+  color: var(--badge-shipped-text);
+}
+
+.badge-delivered {
+  background-color: var(--badge-delivered-bg);
+  color: var(--badge-delivered-text);
+}
+
+.badge-cancelled,
+.badge-failed,
+.badge-returned {
+  background-color: var(--badge-cancelled-bg);
+  color: var(--badge-cancelled-text);
+}
+
+/* ==========================================================================
+   Dismissible Flash Messages (With Icon and Color)
+   ========================================================================== */
+.flash-messages {
+  margin-bottom: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.flash {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-control);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  box-shadow: var(--shadow-sm);
+  transition: opacity var(--transition-base), transform var(--transition-base);
+  overflow-wrap: anywhere;
+}
+
+.flash-icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.flash-content {
+  flex: 1;
+}
+
+.flash-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.65;
+  width: var(--touch-target-min);
+  height: var(--touch-target-min);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-control);
+  flex-shrink: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.flash-close-btn:hover {
+  opacity: 1;
+}
+
+.flash-success {
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
+  border: 1px solid rgba(46, 125, 79, 0.3);
+}
+
+.flash-warning {
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning);
+  border: 1px solid rgba(183, 121, 31, 0.3);
+}
+
+.flash-danger {
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger);
+  border: 1px solid rgba(179, 57, 47, 0.3);
+}
+
+.flash-info {
+  background-color: var(--color-info-bg);
+  color: var(--color-info);
+  border: 1px solid rgba(43, 108, 176, 0.3);
+}
+
+/* ==========================================================================
+   Forms & Inputs (16px font-size minimum prevents iOS zoom)
+   ========================================================================== */
+.form-group {
+  margin-bottom: var(--space-4);
+}
+
+.form-label {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--space-1);
+}
+
+.form-hint {
+  display: block;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-top: var(--space-1);
+}
+
+.form-error {
+  display: block;
+  font-size: var(--text-sm);
+  color: var(--color-danger);
+  font-weight: 500;
+  margin-top: var(--space-1);
+}
+
+.form-control {
+  width: 100%;
+  min-height: var(--touch-target-control);
+  padding: 0 var(--space-3);
+  font-family: inherit;
+  font-size: 1rem; /* 16px min prevents iOS auto-zoom */
+  color: var(--color-text);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-control);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.form-control:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+  border-color: var(--color-accent);
+}
+
+.form-control.has-error {
+  border-color: var(--color-danger);
+}
+
+textarea.form-control {
+  padding-top: var(--space-3);
+  padding-bottom: var(--space-3);
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* Password wrapper with eye toggle */
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper .form-control {
+  padding-right: 52px;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: var(--space-1);
+  width: var(--touch-target-min);
+  height: var(--touch-target-min);
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: var(--radius-control);
+}
+
+.password-toggle-btn:hover {
+  color: var(--color-text);
+}
+
+/* Radio Cards (Delivery Slot & Payment options) */
+.radio-card-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+}
+
+@media (min-width: 600px) {
+  .radio-card-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.radio-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-line);
+  border-radius: var(--radius-card);
+  cursor: pointer;
+  min-height: var(--touch-target-control);
+  transition: all var(--transition-fast);
+}
+
+.radio-card:hover:not(.disabled) {
+  border-color: var(--color-secondary-dark);
+  background-color: var(--color-surface-subtle);
+}
+
+.radio-card input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.radio-card.selected,
+.radio-card:has(input[type="radio"]:checked) {
+  border-color: var(--color-primary);
+  background-color: var(--color-secondary-light);
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+.radio-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-1);
+}
+
+.radio-card-title {
+  font-weight: 700;
+  font-size: var(--text-sm);
+  color: var(--color-text);
+}
+
+.radio-card-desc {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.radio-card.disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background-color: var(--color-bg);
+  border-color: var(--color-line-light);
+}
+
+/* ==========================================================================
+   Category Chips / Filter Tabs
+   ========================================================================== */
+.chips-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding-bottom: var(--space-2);
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.chips-wrapper::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target-min); /* 44px tap target */
+  padding: 0 var(--space-4);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.chip:hover {
+  background-color: var(--color-secondary-light);
+  color: var(--color-primary);
+  border-color: var(--color-secondary-dark);
+}
+
+.chip.active {
+  background-color: var(--color-primary);
+  color: #FFFFFF;
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ==========================================================================
+   Tables & Responsive Card-Table Transformations
+   Wrap in .table-wrap with overflow-x: auto & visible scroll indicator
+   On screens < 768px, rows convert to labelled cards using data-label
+   ========================================================================== */
+.table-wrap,
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-soft);
+  margin-bottom: var(--space-5);
+  position: relative;
+}
+
+/* Scroll hint styling */
+.table-wrap::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 20px;
+  background: linear-gradient(to right, transparent, rgba(43, 36, 30, 0.08));
+  pointer-events: none;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+  text-align: left;
+}
+
+.table th,
+.table td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-line);
+  overflow-wrap: anywhere;
+}
+
+.table th {
+  background-color: var(--color-surface-subtle);
+  color: var(--color-primary-dark);
+  font-weight: 700;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  white-space: nowrap;
+}
+
+.table tbody tr:hover {
+  background-color: var(--color-secondary-light);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table .text-right {
+  text-align: right;
+}
+
+/* Responsive Card Table: Converted to Labelled Cards on Mobile (< 768px) */
+@media (max-width: 767px) {
+  .table.responsive-card-table {
+    display: block;
+    width: 100%;
+  }
+
+  .table.responsive-card-table thead {
+    display: none; /* Hide traditional headers */
+  }
+
+  .table.responsive-card-table tbody {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-3);
+  }
+
+  .table.responsive-card-table tr {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-control);
+    padding: var(--space-3);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .table.responsive-card-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-2) 0;
+    border-bottom: 1px dashed var(--color-line-light);
+    font-size: var(--text-sm);
+  }
+
+  .table.responsive-card-table td:last-child {
+    border-bottom: none;
+    padding-top: var(--space-2);
+  }
+
+  .table.responsive-card-table td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-right: var(--space-2);
+  }
+
+  .table.responsive-card-table .text-right {
+    text-align: right;
+  }
+}

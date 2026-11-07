@@ -1,0 +1,11 @@
+/**
+ * main.css is kept for legacy compatibility.
+ * Modular styles have been decomposed into:
+ * 1. tokens.css
+ * 2. base.css
+ * 3. components.css
+ * 4. store.css
+ * 5. admin.css
+ * 6. tracking.css
+ * This file can be safely removed or kept empty.
+ */
