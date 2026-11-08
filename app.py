@@ -1,7 +1,9 @@
 """Application factory module configuring and assembling the Flask application."""
 import os
 import click
-from flask import Flask, send_from_directory
+from datetime import datetime, timezone
+from flask import Flask, jsonify, render_template, request, send_from_directory, session
+from sqlalchemy import text
 from config import Config, config_by_name
 from extensions import db, login_manager
 from models import User
@@ -43,6 +45,39 @@ def create_app(config_class=None) -> Flask:
         """Serve the worker from the site root so it can control all pages."""
         return send_from_directory(app.static_folder, "service-worker.js", mimetype="application/javascript")
 
+    @app.context_processor
+    def template_context():
+        cart = session.get("cart", {})
+        item_count = 0
+        for value in cart.values() if isinstance(cart, dict) else []:
+            try:
+                item_count += int(value.get("quantity", 0) if isinstance(value, dict) else value)
+            except (TypeError, ValueError):
+                continue
+        return {"cart_item_count": item_count, "current_year": datetime.now(timezone.utc).year}
+
+    @app.errorhandler(404)
+    def not_found(error):
+        return render_template("errors/error.html", status_code=404,
+                               message="The requested page could not be found."), 404
+
+    @app.errorhandler(400)
+    def bad_request(error):
+        return render_template("errors/error.html", status_code=400,
+                               message="The request could not be processed."), 400
+
+    @app.errorhandler(ValueError)
+    def validation_error(error):
+        if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return jsonify(error=str(error)), 400
+        return render_template("errors/error.html", status_code=400, message=str(error)), 400
+
+    @app.errorhandler(500)
+    def internal_error(error):
+        db.session.rollback()
+        return render_template("errors/error.html", status_code=500,
+                               message="An unexpected error occurred."), 500
+
     # Ensure instance directory exists
     try:
         os.makedirs(app.instance_path, exist_ok=True)
@@ -52,9 +87,14 @@ def create_app(config_class=None) -> Flask:
     # Register CLI commands
     @app.cli.command("init-db")
     def init_db_command():
-        """Create all database tables."""
+        """Create database tables and seed the initial catalog."""
         db.create_all()
-        click.echo("Initialized database tables.")
+        with db.engine.begin() as connection:
+            connection.execute(text("CREATE INDEX IF NOT EXISTS ix_categories_name ON categories (name)"))
+            connection.execute(text("CREATE INDEX IF NOT EXISTS ix_products_category_id ON products (category_id)"))
+        from services.search_service import seed_sample_data
+        seed_sample_data()
+        click.echo("Initialized database tables and sample catalog.")
 
     @app.cli.command("create-admin")
     @click.option("--email", default=None, help="Admin email address.")

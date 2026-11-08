@@ -7,6 +7,28 @@
 {% block title %}Track Cold Delivery #{{ tracking_number|default('TRK-TEST12345') }} | Dharti Fresh{% endblock %}
 
 {% block content %}
+{% if shipment is defined and shipment %}
+<section class="tracking-summary-card">
+    <h1 class="section-title">Shipment {{ shipment.tracking_number }}</h1>
+    <div class="tracking-meta-grid">
+        <div class="tracking-meta-item"><strong>Carrier</strong><span>{{ shipment.carrier }}</span></div>
+        <div class="tracking-meta-item"><strong>Status</strong><span>{{ shipment.status|replace('_', ' ')|title }}</span></div>
+        <div class="tracking-meta-item"><strong>Estimated delivery</strong><span>{{ eta.strftime('%Y-%m-%d %H:%M UTC') if eta else 'Not available' }}</span></div>
+    </div>
+</section>
+<section class="timeline-card">
+    <h2 class="timeline-title">Tracking events</h2>
+    <ol class="timeline-list">
+        {% for event in shipment.events %}
+        <li class="timeline-step completed">
+            <div class="timeline-step-header"><strong>{{ event.status|replace('_', ' ')|title }}</strong><time>{{ event.created_at.strftime('%Y-%m-%d %H:%M UTC') }}</time></div>
+            {% if event.location %}<div class="timeline-step-location">{{ event.location }}</div>{% endif %}
+            {% if event.note %}<p class="timeline-step-note">{{ event.note }}</p>{% endif %}
+        </li>
+        {% endfor %}
+    </ol>
+</section>
+{% else %}
 <div class="section-header" style="margin-bottom:var(--space-5);">
     <h1 class="section-title">Cold-Chain Delivery Tracking</h1>
     <p class="section-subtitle">Real-time temperature and checkpoint monitoring from farm fruiting chamber to your doorstep.</p>
@@ -188,4 +210,5 @@
         </li>
     </ol>
 </section>
+{% endif %}
 {% endblock %}

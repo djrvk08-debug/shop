@@ -1,6 +1,10 @@
 """Admin dashboard blueprint for product catalog, orders, shipments, and user administration."""
 from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user
+from sqlalchemy.orm import joinedload, selectinload
+from extensions import db
+from models import Order, OrderItem, Product, Shipment, User
+from services import analytics_service, search_service
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -16,44 +20,66 @@ def require_admin():
 @admin_bp.route("/dashboard")
 def dashboard():
     """Render the executive administration dashboard with summary metrics."""
-    # TODO: Fetch metrics from analytics_service (sales_by_day, shipments_by_status, best_sellers)
-    return render_template("admin/dashboard.html")
+    daily = analytics_service.sales_by_day(1)
+    return render_template(
+        "admin/dashboard.html", today_sales=daily[0]["total_revenue"] if daily else 0,
+        today_order_count=daily[0]["total_orders"] if daily else 0,
+        order_status_counts=analytics_service.orders_by_status(),
+        shipment_status_counts=analytics_service.shipments_by_status(),
+        best_sellers=analytics_service.best_sellers(5),
+        orders_to_pack=Order.query.filter(Order.status.in_(["pending", "paid", "processing"])).count(),
+        active_shipments=Shipment.query.filter(Shipment.status.in_(
+            ["picked_up", "in_transit", "out_for_delivery"]
+        )).count(),
+        low_stock_products=Product.query.filter(Product.stock < 10).order_by(Product.stock).all(),
+        recent_orders=Order.query.options(joinedload(Order.user), selectinload(Order.items).joinedload(OrderItem.product))
+            .order_by(Order.created_at.desc()).limit(10).all(),
+    )
 
 
 @admin_bp.route("/products")
 def products():
     """Display product catalog management inventory view."""
-    # TODO: Fetch product list with category and stock counts
-    return render_template("admin/products.html")
+    products = Product.query.options(joinedload(Product.category)).order_by(Product.name).all()
+    return render_template("admin/products.html", products=products)
 
 
 @admin_bp.route("/products/new", methods=["GET", "POST"])
 def product_create():
     """Create a new product in the store catalog."""
     if request.method == "POST":
-        # TODO: Validate form input and create Product record
-        flash("Product created successfully.", "success")
-        return redirect(url_for("admin.products"))
+        try:
+            product = search_service.create_product(
+                request.form.get("name", ""), request.form.get("price", ""),
+                request.form.get("stock", ""), request.form.get("category_id", ""),
+            )
+        except ValueError as error:
+            flash(str(error), "danger")
+        else:
+            flash(f"{product.name} created successfully.", "success")
+            return redirect(url_for("admin.products"))
 
-    return render_template("admin/product_form.html")
+    return render_template("admin/product_form.html", categories=search_service.get_categories())
 
 
 @admin_bp.route("/orders")
 def orders():
     """Display and manage customer purchase orders."""
-    # TODO: Fetch orders with customer info and order items
-    return render_template("admin/orders.html")
+    orders = Order.query.options(joinedload(Order.user), selectinload(Order.items).joinedload(OrderItem.product))\
+        .order_by(Order.created_at.desc()).all()
+    return render_template("admin/orders.html", orders=orders)
 
 
 @admin_bp.route("/shipments")
 def shipments():
     """Display and manage logistics shipments and fulfillment statuses."""
-    # TODO: Fetch shipments with latest tracking checkpoint status
-    return render_template("admin/shipments.html")
+    shipments = Shipment.query.options(joinedload(Shipment.order), selectinload(Shipment.events))\
+        .order_by(Shipment.created_at.desc()).all()
+    return render_template("admin/shipments.html", shipments=shipments)
 
 
 @admin_bp.route("/users")
 def users():
     """Manage customer and staff administrator accounts."""
-    # TODO: Fetch user listing with role toggling support
-    return render_template("admin/dashboard.html")
+    users = User.query.order_by(User.email).all()
+    return render_template("admin/dashboard.html", users=users)

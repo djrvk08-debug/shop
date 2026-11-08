@@ -7,6 +7,41 @@
 {% block title %}Shopping Cart | Dharti Fresh Mushrooms{% endblock %}
 
 {% block content %}
+{% if cart_items is defined %}
+<div class="section-header" style="margin-bottom:var(--space-5);">
+    <h1 class="section-title">Shopping Cart</h1>
+    <p class="section-subtitle">Prices and availability reflect the current catalog.</p>
+</div>
+<div class="cart-layout">
+    <div class="cart-items-card">
+        {% for item in cart_items %}
+        <div class="cart-item-row">
+            <div class="cart-item-details">
+                <h3 class="cart-item-title"><a href="{{ url_for('store.product_detail', product_id=item.product_id) }}" class="product-name-link">{{ item.product.name }}</a></h3>
+                <div class="cart-item-weight">₹{{ '%.2f'|format(item.unit_price) }} each</div>
+                <form action="{{ url_for('cart.remove_from_cart') }}" method="POST">
+                    <input type="hidden" name="product_id" value="{{ item.product_id }}">
+                    <button type="submit" class="cart-item-remove-btn">Remove</button>
+                </form>
+            </div>
+            <div class="cart-item-controls">
+                <form action="{{ url_for('cart.update_cart') }}" method="POST" class="qty-stepper">
+                    <input type="hidden" name="product_id" value="{{ item.product_id }}">
+                    <input type="number" class="qty-input" name="quantity" value="{{ item.quantity }}" min="0" max="{{ item.product.stock }}" aria-label="Quantity for {{ item.product.name }}">
+                    <button type="submit" class="btn btn-sm btn-secondary">Update</button>
+                </form>
+                <div class="cart-item-total">₹{{ '%.2f'|format(item.line_total) }}</div>
+            </div>
+        </div>
+        {% else %}<p>Your cart is empty.</p>{% endfor %}
+    </div>
+    <aside class="order-summary-card">
+        <h2 class="summary-title">Order Summary</h2>
+        <div class="summary-row total-row"><span>Subtotal</span><span>₹{{ '%.2f'|format(cart_total) }}</span></div>
+        {% if cart_items %}<a href="{{ url_for('cart.checkout') }}" class="btn btn-accent btn-block">Proceed to Checkout</a>{% endif %}
+    </aside>
+</div>
+{% else %}
 <div class="section-header" style="margin-bottom:var(--space-5);">
     <h1 class="section-title">Shopping Cart</h1>
     <p class="section-subtitle">Fresh harvest reserved for 30 minutes. Hand-packed in cold-chain insulation.</p>
@@ -129,4 +164,5 @@
         </div>
     </aside>
 </div>
+{% endif %}
 {% endblock %}

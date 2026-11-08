@@ -127,15 +127,14 @@ pytest
 - [x] **Application setup**: The application factory, blueprint registration, and `init-db` / `create-admin` CLI commands are implemented.
 - [x] **Basic route smoke tests**: Authentication pages, the public tracking page, and the cart add endpoint have passing tests.
 
-### Remaining
+### Implemented Workflows
 
-- [ ] **Catalog and search**: Add database-backed product/category listing, product detail, pagination, and initial sample-data seeding; implement indexed keyword search and trie-based autocomplete in `services/search_service.py`.
-- [ ] **Cart**: Implement `services/cart_service.py` and wire cart display, update, and remove routes to session state with current stock and price validation.
-- [ ] **Checkout and orders**: Implement transactional checkout, inventory updates, order status changes, and order retrieval in `services/order_service.py`.
-- [ ] **Shipment tracking**: Implement shipment creation, event validation and persistence, tracking lookup, and ETA calculation in `services/tracking_service.py`.
-- [ ] **Admin workflows and analytics**: Connect product, order, shipment, and user pages to database records; implement dashboard aggregations in `services/analytics_service.py`.
-- [ ] **Notifications**: Implement the notification queue and delivery processing in `services/notify_service.py`.
-- [ ] **Application support**: Add centralized error handlers and template context helpers; add database migrations if schema evolution is needed.
-- [ ] **Behavioral coverage**: Replace tests that assert `NotImplementedError` with tests for the completed cart, order, and tracking workflows, then cover the catalog and admin flows.
+- **Catalog and search**: Database-backed catalog, category filtering, pagination, product details, keyword search, autocomplete, and idempotent sample seeding through `flask init-db`.
+- **Cart and checkout**: Session quantities are validated against current stock and current database prices; checkout records orders and decrements stock transactionally.
+- **Orders and tracking**: Validated status transitions, shipment records, chronological carrier events, and ETA projection.
+- **Admin and analytics**: Database-backed management pages and SQL-grouped sales, seller, and status metrics.
+- **Notifications**: In-process idempotent queue with retry backoff. Configure `NOTIFICATION_SENDER` as a callable to connect an email/SMS provider; the default keeps messages queued.
+- **Carrier updates**: Configure `CARRIER_WEBHOOK_TOKEN` and send it as the `X-Carrier-Token` header when posting carrier events.
+- **Application support**: Centralized validation, 400, 404, and 500 responses plus cart-count and year template context.
 
-**Verification note**: `pytest -q` currently passes all 18 tests in the project virtual environment. Some passing tests explicitly expect unimplemented service functions to raise `NotImplementedError`, so this is not evidence that the remaining workflows are complete.
+Catalog indexes are declared on the models and are also ensured by `flask init-db` for existing databases. No model columns were added, so no migration file is required.

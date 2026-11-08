@@ -148,6 +148,14 @@
         <h2 class="summary-title">Your Fresh Order</h2>
 
         <div style="display:flex; flex-direction:column; gap:var(--space-3); margin-bottom:var(--space-4);">
+            {% if cart_items is defined %}
+            {% for item in cart_items %}
+            <div style="display:flex; justify-content:space-between; font-size:var(--text-sm);">
+                <strong>{{ item.product.name }} × {{ item.quantity }}</strong>
+                <strong>₹{{ '%.2f'|format(item.line_total) }}</strong>
+            </div>
+            {% else %}<p>Your cart is empty.</p>{% endfor %}
+            {% else %}
             <div style="display:flex; justify-content:space-between; font-size:var(--text-sm);">
                 <div>
                     <strong>Pearl Oyster Mushrooms</strong>
@@ -163,8 +171,10 @@
                 </div>
                 <div style="font-weight:600;">₹150</div>
             </div>
+            {% endif %}
         </div>
 
+        {% if cart_items is not defined %}
         <div class="summary-row">
             <span>Packaging & Gel Ice</span>
             <span class="text-success" style="font-weight:600;">FREE</span>
@@ -174,10 +184,11 @@
             <span>Refrigerated Delivery</span>
             <span style="font-weight:600;">₹49</span>
         </div>
+        {% endif %}
 
         <div class="summary-row total-row">
             <span>Total Payable</span>
-            <span>₹479</span>
+            <span>₹{{ '%.2f'|format(cart_total) if cart_total is defined else '479' }}</span>
         </div>
 
         <div style="background-color:var(--color-secondary-light); border-radius:var(--radius-control); padding:var(--space-3); margin-top:var(--space-4); font-size:var(--text-xs); color:var(--color-primary-dark);">

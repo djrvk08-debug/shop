@@ -80,6 +80,16 @@
                     </tr>
                 </thead>
                 <tbody>
+                    {% if shipments is defined %}
+                    {% for shipment in shipments %}
+                    <tr><td>#{{ shipment.id }}</td><td>#{{ shipment.order_id }}</td><td>{{ shipment.carrier }}</td>
+                        <td><code>{{ shipment.tracking_number }}</code></td><td>—</td>
+                        <td>{{ shipment.status|replace('_', ' ')|title }}</td>
+                        <td>{{ shipment.eta.strftime('%Y-%m-%d %H:%M') if shipment.eta else '—' }}</td>
+                        <td class="text-right"><a href="{{ url_for('tracking.track_shipment', tracking_number=shipment.tracking_number) }}" class="btn btn-sm btn-secondary">Live Track</a></td>
+                    </tr>
+                    {% else %}<tr><td colspan="8">No shipments found.</td></tr>{% endfor %}
+                    {% else %}
                     <tr>
                         <td><strong>#SHP-501</strong></td>
                         <td>#ORD-8101</td>
@@ -128,6 +138,7 @@
                             <span class="text-muted" style="font-size:var(--text-xs);">Confirmed</span>
                         </td>
                     </tr>
+                    {% endif %}
                 </tbody>
             </table>
         </div>

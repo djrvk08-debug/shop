@@ -7,6 +7,16 @@
 {% block title %}Farm Admin Dashboard | Dharti Mushrooms{% endblock %}
 
 {% block content %}
+{% if users is defined %}
+<main class="admin-main-content">
+    <div class="admin-page-header"><h1 class="admin-page-title">Staff & Users</h1></div>
+    <div class="table-responsive"><table class="table">
+        <thead><tr><th>Email</th><th>Role</th><th>Account ID</th></tr></thead>
+        <tbody>{% for user in users %}<tr><td>{{ user.email }}</td><td>{{ 'Admin' if user.is_admin else 'Customer' }}</td><td>{{ user.id }}</td></tr>
+        {% else %}<tr><td colspan="3">No users found.</td></tr>{% endfor %}</tbody>
+    </table></div>
+</main>
+{% else %}
 <!-- Mobile Admin Bar with Sidebar Toggle -->
 <div class="admin-mobile-bar">
     <span class="admin-mobile-title">Farm Admin Portal</span>
@@ -75,8 +85,8 @@
                 </div>
                 <div class="admin-stat-details">
                     <span class="admin-stat-label">Today's Sales</span>
-                    <span class="admin-stat-val">₹24,850</span>
-                    <span class="admin-stat-note text-success">+18% vs yesterday</span>
+                    <span class="admin-stat-val">₹{{ '%.2f'|format(today_sales|default(0)) }}</span>
+                    <span class="admin-stat-note">Today's delivered orders</span>
                 </div>
             </div>
 
@@ -87,7 +97,7 @@
                 </div>
                 <div class="admin-stat-details">
                     <span class="admin-stat-label">Orders to Pack</span>
-                    <span class="admin-stat-val">18 Orders</span>
+                    <span class="admin-stat-val">{{ orders_to_pack|default(0) }} Orders</span>
                     <span class="admin-stat-note">Morning batch 7-10 AM</span>
                 </div>
             </div>
@@ -99,8 +109,8 @@
                 </div>
                 <div class="admin-stat-details">
                     <span class="admin-stat-label">Out for Delivery</span>
-                    <span class="admin-stat-val">4 Cold Vans</span>
-                    <span class="admin-stat-note text-success">All sensors &lt; 4.2°C</span>
+                    <span class="admin-stat-val">{{ active_shipments|default(0) }} Shipments</span>
+                    <span class="admin-stat-note">Currently in transit</span>
                 </div>
             </div>
 
@@ -111,7 +121,7 @@
                 </div>
                 <div class="admin-stat-details">
                     <span class="admin-stat-label">Low Stock Alert</span>
-                    <span class="admin-stat-val">2 Varieties</span>
+                    <span class="admin-stat-val">{{ low_stock_products|length }} Products</span>
                     <span class="admin-stat-note" style="color:var(--color-warning);">Under 10 packs left</span>
                 </div>
             </div>
@@ -127,14 +137,9 @@
                 </div>
                 <div class="warning-panel-content">
                     <ul class="warning-panel-list">
-                        <li>
-                            <span>Fresh Shiitake Mushrooms (200g)</span>
-                            <span class="badge badge-low-stock">6 packs left</span>
-                        </li>
-                        <li>
-                            <span>Royal King Oyster (500g)</span>
-                            <span class="badge badge-low-stock">8 packs left</span>
-                        </li>
+                        {% for product in low_stock_products %}
+                        <li><span>{{ product.name }}</span><span class="badge badge-low-stock">{{ product.stock }} left</span></li>
+                        {% else %}<li>No low-stock products.</li>{% endfor %}
                     </ul>
                 </div>
             </div>
@@ -171,67 +176,18 @@
                             <th class="text-right">Action</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong style="font-family:monospace;">#ORD-8101</strong></td>
-                            <td>
-                                <div>Chef Anand Kumar</div>
-                                <div style="font-size:var(--text-xs); color:var(--color-text-muted);">Koramangala, Bengaluru</div>
-                            </td>
-                            <td>Pearl Oyster (500g), Button (200g &times; 2)</td>
-                            <td><span class="badge badge-cold">Morning 7-10 AM</span></td>
-                            <td><span class="badge badge-shipped">In Transit (3.8°C)</span></td>
-                            <td class="text-right"><strong>₹479</strong></td>
-                            <td class="text-right">
-                                <a href="{{ url_for('tracking.track_shipment', tracking_number='TRK-TEST12345') }}" class="btn btn-sm btn-secondary">Track</a>
-                            </td>
+                    <tbody>{% for order in recent_orders %}
+                        <tr><td>#{{ order.id }}</td><td>{{ order.user.email }}</td>
+                            <td>{% for item in order.items %}{{ item.product.name }} × {{ item.quantity }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
+                            <td>—</td><td>{{ order.status|title }}</td>
+                            <td class="text-right">₹{{ '%.2f'|format(order.total) }}</td>
+                            <td class="text-right">{% if order.shipment %}<a href="{{ url_for('tracking.track_shipment', tracking_number=order.shipment.tracking_number) }}" class="btn btn-sm btn-secondary">Track</a>{% else %}—{% endif %}</td>
                         </tr>
-                        <tr>
-                            <td><strong style="font-family:monospace;">#ORD-8102</strong></td>
-                            <td>
-                                <div>Bistro Olive (Chef Meera)</div>
-                                <div style="font-size:var(--text-xs); color:var(--color-text-muted);">Indiranagar 100ft Rd</div>
-                            </td>
-                            <td>King Oyster (1kg &times; 3), Shiitake (500g &times; 2)</td>
-                            <td><span class="badge badge-cold">Morning 7-10 AM</span></td>
-                            <td><span class="badge badge-processing">Packed & Chilled</span></td>
-                            <td class="text-right"><strong>₹3,530</strong></td>
-                            <td class="text-right">
-                                <button type="button" class="btn btn-sm btn-primary">Dispatch</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong style="font-family:monospace;">#ORD-8103</strong></td>
-                            <td>
-                                <div>Rahul Varma</div>
-                                <div style="font-size:var(--text-xs); color:var(--color-text-muted);">HSR Layout Sector 2</div>
-                            </td>
-                            <td>Milky Mushrooms (500g), Umami Powder (100g)</td>
-                            <td><span class="badge badge-pending">Afternoon 12-3 PM</span></td>
-                            <td><span class="badge badge-paid">Paid (UPI)</span></td>
-                            <td class="text-right"><strong>₹509</strong></td>
-                            <td class="text-right">
-                                <button type="button" class="btn btn-sm btn-secondary">Pack</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong style="font-family:monospace;">#ORD-8104</strong></td>
-                            <td>
-                                <div>Dr. Shalini Rao</div>
-                                <div style="font-size:var(--text-xs); color:var(--color-text-muted);">Jayanagar 4th Block</div>
-                            </td>
-                            <td>Dried Shiitake Mix (250g)</td>
-                            <td><span class="badge badge-pending">Evening 5-8 PM</span></td>
-                            <td><span class="badge badge-pending">Pending Payment</span></td>
-                            <td class="text-right"><strong>₹729</strong></td>
-                            <td class="text-right">
-                                <button type="button" class="btn btn-sm btn-secondary">View</button>
-                            </td>
-                        </tr>
-                    </tbody>
+                    {% else %}<tr><td colspan="7">No orders yet.</td></tr>{% endfor %}</tbody>
                 </table>
             </div>
         </div>
     </main>
 </div>
+{% endif %}
 {% endblock %}

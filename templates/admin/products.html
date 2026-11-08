@@ -79,6 +79,17 @@
                     </tr>
                 </thead>
                 <tbody>
+                    {% if products is defined %}
+                    {% for product in products %}
+                    <tr><td><strong>#{{ product.id }}</strong></td><td>{{ product.name }}</td>
+                        <td>{{ product.category.name if product.category else '—' }}</td>
+                        <td class="text-right">₹{{ '%.2f'|format(product.price) }}</td>
+                        <td class="text-right">{{ product.stock }}</td>
+                        <td>{{ 'In stock' if product.stock else 'Out of stock' }}</td>
+                        <td class="text-right"><a href="{{ url_for('store.product_detail', product_id=product.id) }}" class="btn btn-sm btn-secondary">View</a></td>
+                    </tr>
+                    {% else %}<tr><td colspan="7">No products found.</td></tr>{% endfor %}
+                    {% else %}
                     <tr>
                         <td><strong>#1</strong></td>
                         <td>
@@ -191,6 +202,7 @@
                             <button type="button" class="btn btn-sm btn-secondary disabled" disabled>Restock</button>
                         </td>
                     </tr>
+                    {% endif %}
                 </tbody>
             </table>
         </div>

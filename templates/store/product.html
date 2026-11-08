@@ -7,6 +7,24 @@
 {% block title %}Pearl Oyster Mushrooms | Dharti Fresh Farm{% endblock %}
 
 {% block content %}
+{% if product is defined and product %}
+<section class="product-detail-layout">
+    <div class="product-detail-info">
+        <nav><a href="{{ url_for('store.home') }}">Home</a> / {{ product.category.name if product.category else 'Catalog' }}</nav>
+        <h1 class="product-detail-title">{{ product.name }}</h1>
+        <div class="product-detail-pricing"><span class="price-currency">₹</span><span class="price-amount">{{ '%.2f'|format(product.price) }}</span></div>
+        <p>{{ product.stock }} in stock</p>
+        {% if product.stock > 0 %}
+        <form action="{{ url_for('cart.add_to_cart') }}" method="POST">
+            <input type="hidden" name="product_id" value="{{ product.id }}">
+            <label for="quantity">Quantity</label>
+            <input type="number" id="quantity" name="quantity" value="1" min="1" max="{{ product.stock }}" required>
+            <button type="submit" class="btn btn-accent">Add to Cart</button>
+        </form>
+        {% else %}<span class="badge badge-out-of-stock">Out of stock</span>{% endif %}
+    </div>
+</section>
+{% else %}
 <!-- Breadcrumb Navigation -->
 <nav style="display:flex; align-items:center; gap:8px; font-size:var(--text-xs); color:var(--color-text-muted); margin-bottom:var(--space-4);">
     <a href="{{ url_for('store.home') }}">Home</a>
@@ -149,4 +167,5 @@
         </button>
     </form>
 </div>
+{% endif %}
 {% endblock %}

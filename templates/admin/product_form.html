@@ -77,10 +77,7 @@
                     <div class="form-group">
                         <label class="form-label" for="category_id">Category *</label>
                         <select id="category_id" name="category_id" class="form-control" required>
-                            <option value="1">Fresh Mushrooms (Cold-Chain)</option>
-                            <option value="2">Exotic Specialty Mushrooms</option>
-                            <option value="3">Sun-Dried Mushrooms</option>
-                            <option value="4">Spice & Umami Powders</option>
+                            {% for category in categories %}<option value="{{ category.id }}">{{ category.name }}</option>{% endfor %}
                         </select>
                     </div>
 

@@ -21,6 +21,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
     is_admin = db.Column(db.Boolean, default=False, nullable=False)
+    orders = db.relationship("Order", backref="user", lazy=True)
 
     def set_password(self, password: str) -> None:
         """Hash and set user password."""
@@ -39,7 +40,7 @@ class Category(db.Model):
     __tablename__ = "categories"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
+    name = db.Column(db.String(100), nullable=False, index=True)
     parent_id = db.Column(db.Integer, db.ForeignKey("categories.id"), nullable=True)
 
     # TODO: Add self-referential parent/subcategories relationship
@@ -55,7 +56,8 @@ class Product(db.Model):
     name = db.Column(db.String(255), nullable=False, index=True)
     price = db.Column(db.Numeric(10, 2), nullable=False)
     stock = db.Column(db.Integer, default=0, nullable=False)
-    category_id = db.Column(db.Integer, db.ForeignKey("categories.id"), nullable=True)
+    category_id = db.Column(db.Integer, db.ForeignKey("categories.id"), nullable=True, index=True)
+    category = db.relationship("Category", backref=db.backref("products", lazy=True))
 
     # TODO: Add description, SKU, image_url, and active status fields
     # TODO: Add relationship to OrderItem
@@ -71,9 +73,8 @@ class Order(db.Model):
     status = db.Column(db.String(50), default="pending", nullable=False, index=True)
     total = db.Column(db.Numeric(10, 2), default=0.0, nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
-
-    # TODO: Add relationship to OrderItem (items = db.relationship('OrderItem', backref='order', cascade='all, delete-orphan'))
-    # TODO: Add relationship to Shipment (shipment = db.relationship('Shipment', backref='order', uselist=False))
+    items = db.relationship("OrderItem", backref="order", lazy=True, cascade="all, delete-orphan")
+    shipment = db.relationship("Shipment", backref="order", uselist=False, lazy=True)
 
 
 class OrderItem(db.Model):
@@ -87,7 +88,7 @@ class OrderItem(db.Model):
     quantity = db.Column(db.Integer, default=1, nullable=False)
     unit_price = db.Column(db.Numeric(10, 2), nullable=False)
 
-    # TODO: Add relationship to Product for fast querying
+    product = db.relationship("Product", backref=db.backref("order_items", lazy=True))
 
 
 class Shipment(db.Model):
@@ -102,8 +103,8 @@ class Shipment(db.Model):
     status = db.Column(db.String(50), default="pending", nullable=False, index=True)
     eta = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
-
-    # TODO: Add relationship to TrackingEvent (events = db.relationship('TrackingEvent', backref='shipment', lazy='dynamic', cascade='all, delete-orphan'))
+    events = db.relationship("TrackingEvent", backref="shipment", lazy=True,
+                              cascade="all, delete-orphan", order_by="TrackingEvent.created_at")
 
 
 class TrackingEvent(db.Model):

@@ -21,6 +21,45 @@
             <p class="section-subtitle">Priced in Indian Rupees (₹). Choose pack weight: 200 g, 500 g, or 1 kg.</p>
         </div>
 
+        {% if search_query %}<p>Search results for “{{ search_query }}”</p>{% endif %}
+        {% if products is defined %}
+        <div class="chips-wrapper" aria-label="Product categories">
+            <a class="chip{% if not category_id %} active{% endif %}" href="{{ url_for('store.product_list') }}">All Items</a>
+            {% for category in categories %}
+            <a class="chip{% if category_id|default(0)|int == category.id %} active{% endif %}"
+               href="{{ url_for('store.product_list', category_id=category.id) }}">{{ category.name }}</a>
+            {% endfor %}
+        </div>
+        <div class="product-grid">
+            {% for product in products %}
+            <article class="product-card">
+                <div class="product-image-wrapper"><div class="product-image-placeholder"><span>{{ product.name }}</span></div></div>
+                <div class="product-info-block">
+                    <span class="product-category-tag">{{ product.category.name if product.category else 'Mushrooms' }}</span>
+                    <h3 class="product-title"><a href="{{ url_for('store.product_detail', product_id=product.id) }}" class="product-name-link">{{ product.name }}</a></h3>
+                    <div class="product-price-row"><span class="price-currency">₹</span><span class="price-amount">{{ '%.2f'|format(product.price) }}</span></div>
+                    <p class="text-muted">{{ product.stock }} in stock</p>
+                    {% if product.stock > 0 %}
+                    <form action="{{ url_for('cart.add_to_cart') }}" method="POST">
+                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                        <input type="hidden" name="quantity" value="1">
+                        <button type="submit" class="btn btn-primary btn-block">Add to Cart</button>
+                    </form>
+                    {% else %}<span class="badge badge-out-of-stock">Out of stock</span>{% endif %}
+                </div>
+            </article>
+            {% else %}<p>No products found.</p>{% endfor %}
+        </div>
+        {% if pagination and pagination.pages > 1 %}
+        <nav aria-label="Product pages">
+            {% for page_number in pagination.iter_pages() %}
+                {% if page_number %}<a class="btn btn-sm{% if page_number == pagination.page %} btn-primary{% else %} btn-secondary{% endif %}"
+                   href="{{ url_for('store.product_list', page=page_number, category_id=category_id, sort=request.args.get('sort')) }}">{{ page_number }}</a>
+                {% else %}<span>…</span>{% endif %}
+            {% endfor %}
+        </nav>
+        {% endif %}
+        {% else %}
         <!-- Category Chips (Instant JS Filter) -->
         <div class="chips-wrapper" role="tablist">
             <button type="button" class="chip active" data-category="all">All Items (8)</button>
@@ -414,5 +453,6 @@
             </div>
         </article>
     </div>
+        {% endif %}
 </section>
 {% endblock %}

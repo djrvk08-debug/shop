@@ -10,6 +10,7 @@ class Config:
     """Base configuration with default settings and environment fallbacks."""
 
     SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-production")
+    CARRIER_WEBHOOK_TOKEN = os.environ.get("CARRIER_WEBHOOK_TOKEN")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     DEBUG = False
     TESTING = False
@@ -38,6 +39,7 @@ class TestingConfig(Config):
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
     WTF_CSRF_ENABLED = False
+    NOTIFICATION_SENDER = None
 
 
 class ProductionConfig(Config):

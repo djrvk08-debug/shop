@@ -1,6 +1,11 @@
 """Shipment tracking service managing carrier logistics, delivery rules, and timeline events."""
 from datetime import datetime
+from datetime import timedelta, timezone
 from typing import Any
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import selectinload
+from extensions import db
+from models import Order, Shipment, TrackingEvent
 
 # State machine defining valid delivery progression transitions
 DELIVERY_STATUS_TRANSITIONS: dict[str, list[str]] = {
@@ -28,10 +33,32 @@ def create_shipment(
     :return: Created Shipment model instance.
     :raises ValueError: If tracking_number is not unique or order already has a shipment.
     """
-    # TODO: Validate uniqueness of tracking_number
-    # TODO: Verify order exists and is in 'processing' or 'paid' status
-    # TODO: Instantiate Shipment and initial TrackingEvent ('pending')
-    raise NotImplementedError("tracking_service.create_shipment is not implemented yet.")
+    carrier = carrier.strip() if isinstance(carrier, str) else ""
+    tracking_number = tracking_number.strip() if isinstance(tracking_number, str) else ""
+    if not carrier or len(carrier) > 100:
+        raise ValueError("A valid carrier is required.")
+    if not tracking_number or len(tracking_number) > 100:
+        raise ValueError("A valid tracking number is required.")
+    order = db.session.get(Order, order_id)
+    if order is None or order.status not in {"paid", "processing"}:
+        raise ValueError("Shipment requires an existing paid or processing order.")
+    if Shipment.query.filter_by(order_id=order_id).first():
+        raise ValueError("This order already has a shipment.")
+    if Shipment.query.filter_by(tracking_number=tracking_number).first():
+        raise ValueError("Tracking number is already in use.")
+    shipment = Shipment(order_id=order_id, carrier=carrier, tracking_number=tracking_number,
+                        status="pending", eta=eta)
+    db.session.add(shipment)
+    db.session.flush()
+    db.session.add(TrackingEvent(shipment_id=shipment.id, status="pending", note="Shipment created"))
+    if shipment.eta is None:
+        shipment.eta = calculate_eta(shipment.id)
+    try:
+        db.session.commit()
+    except IntegrityError as error:
+        db.session.rollback()
+        raise ValueError("Tracking number is already in use.") from error
+    return shipment
 
 
 def add_event(
@@ -46,11 +73,34 @@ def add_event(
     :return: Created TrackingEvent instance.
     :raises ValueError: If shipment not found, status move invalid, or identical event is duplicate.
     """
-    # TODO: Fetch Shipment by tracking_number
-    # TODO: Validate status is in DELIVERY_STATUS_TRANSITIONS[shipment.status]
-    # TODO: Guard against duplicate event spamming
-    # TODO: Create TrackingEvent, update Shipment.status, and trigger notify_service
-    raise NotImplementedError("tracking_service.add_event is not implemented yet.")
+    if not isinstance(status, str) or status not in DELIVERY_STATUS_TRANSITIONS:
+        raise ValueError("Invalid shipment status.")
+    shipment = Shipment.query.filter_by(tracking_number=tracking_number).first()
+    if shipment is None:
+        raise ValueError("Shipment not found.")
+    if status not in DELIVERY_STATUS_TRANSITIONS[shipment.status]:
+        raise ValueError(f"Invalid shipment status transition: {shipment.status} to {status}.")
+    location = location.strip() if isinstance(location, str) else None
+    note = note.strip() if isinstance(note, str) else None
+    if location and len(location) > 255:
+        raise ValueError("Location must be 255 characters or fewer.")
+    if note and len(note) > 2000:
+        raise ValueError("Note must be 2000 characters or fewer.")
+    event = TrackingEvent(shipment_id=shipment.id, status=status,
+                          location=location or None, note=note or None)
+    shipment.status = status
+    db.session.add(event)
+    db.session.commit()
+    if shipment.order.user:
+        from services.notify_service import queue_notification
+        queue_notification(
+            recipient=shipment.order.user.email, channel="email",
+            subject=f"Shipment {shipment.tracking_number} update",
+            message=f"Shipment status is now {status.replace('_', ' ')}.",
+            context={"tracking_number": shipment.tracking_number, "status": status},
+            idempotency_key=f"shipment:{shipment.id}:status:{status}",
+        )
+    return event
 
 
 def get_shipment_by_tracking(tracking_number: str) -> Any:
@@ -59,8 +109,9 @@ def get_shipment_by_tracking(tracking_number: str) -> Any:
     :param tracking_number: Shipment tracking code.
     :return: Shipment model instance with events loaded.
     """
-    # TODO: Query Shipment joined with TrackingEvents ordered by created_at asc
-    raise NotImplementedError("tracking_service.get_shipment_by_tracking is not implemented yet.")
+    return Shipment.query.options(selectinload(Shipment.events)).filter_by(
+        tracking_number=tracking_number
+    ).first()
 
 
 def calculate_eta(shipment_id: int) -> datetime | None:
@@ -69,5 +120,18 @@ def calculate_eta(shipment_id: int) -> datetime | None:
     :param shipment_id: Primary key of the shipment.
     :return: Estimated arrival datetime or None.
     """
-    # TODO: Compute dynamic ETA based on transit velocity and route history
-    raise NotImplementedError("tracking_service.calculate_eta is not implemented yet.")
+    shipment = db.session.get(Shipment, shipment_id)
+    if shipment is None or shipment.status in {"delivered", "cancelled", "returned_to_sender"}:
+        return None
+    base = shipment.created_at or datetime.now(timezone.utc)
+    if base.tzinfo is None:
+        base = base.replace(tzinfo=timezone.utc)
+    estimates = {
+        "pending": timedelta(days=3),
+        "picked_up": timedelta(days=2),
+        "in_transit": timedelta(days=1),
+        "out_for_delivery": timedelta(hours=4),
+        "failed_attempt": timedelta(days=1),
+        "exception": timedelta(days=2),
+    }
+    return base + estimates.get(shipment.status, timedelta(days=2))

@@ -78,7 +78,7 @@
                     <!-- Cart with count badge -->
                     <a href="{{ url_for('cart.view_cart') }}" class="cart-nav-btn" aria-label="Shopping Cart">
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-                        <span class="cart-badge">{{ session.get('cart', {})|length if session.get('cart') else 2 }}</span>
+                        <span class="cart-badge">{{ cart_item_count }}</span>
                     </a>
 
                     <!-- Auth / Account -->
@@ -106,7 +106,7 @@
             </form>
             <a href="{{ url_for('store.home') }}" class="nav-link">Fresh Mushrooms</a>
             <a href="{{ url_for('tracking.track_shipment', tracking_number='TRK-TEST12345') }}" class="nav-link">Track Delivery</a>
-            <a href="{{ url_for('cart.view_cart') }}" class="nav-link">Cart ({{ session.get('cart', {})|length if session.get('cart') else 2 }})</a>
+            <a href="{{ url_for('cart.view_cart') }}" class="nav-link">Cart ({{ cart_item_count }})</a>
             {% if current_user.is_authenticated %}
                 {% if current_user.is_admin %}
                     <a href="{{ url_for('admin.dashboard') }}" class="nav-link">Admin Dashboard</a>
@@ -182,7 +182,7 @@
         <a href="{{ url_for('cart.view_cart') }}" class="mobile-bottom-nav-item{% if request.endpoint == 'cart.view_cart' %} active{% endif %}">
             <span class="mobile-bottom-nav-icon-wrap">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-                <span class="mobile-bottom-nav-badge">{{ session.get('cart', {})|length if session.get('cart') else 2 }}</span>
+                <span class="mobile-bottom-nav-badge">{{ cart_item_count }}</span>
             </span>
             <span>Cart</span>
         </a>
@@ -247,7 +247,7 @@
             </div>
 
             <div class="footer-bottom">
-                <p>&copy; 2026 Dharti Fresh Mushroom Farm. Organic & Cold-Chain Delivery. Prices in INR (₹).</p>
+                <p>&copy; {{ current_year }} Dharti Fresh Mushroom Farm. Organic & Cold-Chain Delivery. Prices in INR (₹).</p>
                 <p>Designed with earthy farm care. All rights reserved.</p>
             </div>
         </div>
