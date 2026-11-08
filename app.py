@@ -101,8 +101,10 @@ def create_app(config_class=None) -> Flask:
     @click.option("--password", default=None, help="Admin password.")
     def create_admin_command(email, password):
         """Create admin user if it does not already exist."""
-        admin_email = email or os.environ.get("ADMIN_EMAIL", "admin@example.com")
-        admin_pass = password or os.environ.get("ADMIN_PASSWORD", "admin123")
+        admin_email = email or os.environ.get("ADMIN_EMAIL") or click.prompt("Admin email")
+        admin_pass = password or os.environ.get("ADMIN_PASSWORD") or click.prompt(
+            "Admin password", hide_input=True, confirmation_prompt=True
+        )
         existing_user = User.query.filter_by(email=admin_email).first()
         if existing_user:
             click.echo(f"Admin user '{admin_email}' already exists.")
