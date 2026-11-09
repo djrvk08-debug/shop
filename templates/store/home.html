@@ -1,5 +1,6 @@
-{# Storefront Homepage: compact About panel, category chips, and product grid. #}
+﻿{# Storefront Homepage: compact About panel, category chips, and product grid. #}
 {% extends "base.html" %}
+{% from "components/ui.html" import product_card, pagination as render_pagination %}
 
 {% block title %}Dharti Fresh Mushrooms | Farm to Door Fresh Harvest{% endblock %}
 
@@ -18,10 +19,10 @@
     <div class="catalog-filter-bar">
         <div>
             <h2 class="section-title">Farm Catalog</h2>
-            <p class="section-subtitle">Priced in Indian Rupees (₹). Choose pack weight: 200 g, 500 g, or 1 kg.</p>
+            <p class="section-subtitle">Priced in Indian Rupees (â‚¹). Choose pack weight: 200 g, 500 g, or 1 kg.</p>
         </div>
 
-        {% if search_query %}<p>Search results for “{{ search_query }}”</p>{% endif %}
+        {% if search_query %}<p>Search results for â€œ{{ search_query }}â€</p>{% endif %}
         {% if products is defined %}
         <div class="chips-wrapper" aria-label="Product categories">
             <a class="chip{% if not category_id %} active{% endif %}" href="{{ url_for('store.product_list') }}">All Items</a>
@@ -30,35 +31,13 @@
                href="{{ url_for('store.product_list', category_id=category.id) }}">{{ category.name }}</a>
             {% endfor %}
         </div>
+        </div>
         <div class="product-grid">
             {% for product in products %}
-            <article class="product-card">
-                <div class="product-image-wrapper"><div class="product-image-placeholder"><span>{{ product.name }}</span></div></div>
-                <div class="product-info-block">
-                    <span class="product-category-tag">{{ product.category.name if product.category else 'Mushrooms' }}</span>
-                    <h3 class="product-title"><a href="{{ url_for('store.product_detail', product_id=product.id) }}" class="product-name-link">{{ product.name }}</a></h3>
-                    <div class="product-price-row"><span class="price-currency">₹</span><span class="price-amount">{{ '%.2f'|format(product.price) }}</span></div>
-                    <p class="text-muted">{{ product.stock }} in stock</p>
-                    {% if product.stock > 0 %}
-                    <form action="{{ url_for('cart.add_to_cart') }}" method="POST">
-                        <input type="hidden" name="product_id" value="{{ product.id }}">
-                        <input type="hidden" name="quantity" value="1">
-                        <button type="submit" class="btn btn-primary btn-block">Add to Cart</button>
-                    </form>
-                    {% else %}<span class="badge badge-out-of-stock">Out of stock</span>{% endif %}
-                </div>
-            </article>
+            {{ product_card(product) }}
             {% else %}<p>No products found.</p>{% endfor %}
         </div>
-        {% if pagination and pagination.pages > 1 %}
-        <nav aria-label="Product pages">
-            {% for page_number in pagination.iter_pages() %}
-                {% if page_number %}<a class="btn btn-sm{% if page_number == pagination.page %} btn-primary{% else %} btn-secondary{% endif %}"
-                   href="{{ url_for('store.product_list', page=page_number, category_id=category_id, sort=request.args.get('sort')) }}">{{ page_number }}</a>
-                {% else %}<span>…</span>{% endif %}
-            {% endfor %}
-        </nav>
-        {% endif %}
+        {{ render_pagination(pagination, 'store.product_list', {'category_id': category_id, 'sort': request.args.get('sort')}) }}
         {% else %}
         <!-- Category Chips (Instant JS Filter) -->
         <div class="chips-wrapper" role="tablist">
@@ -91,11 +70,11 @@
                 </h3>
                 <div class="product-harvest-time">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                    <span>Harvested today, 5:30 AM • Best within 4 days</span>
+                    <span>Harvested today, 5:30 AM â€¢ Best within 4 days</span>
                 </div>
 
                 <div class="product-price-row">
-                    <span class="price-currency">₹</span>
+                    <span class="price-currency">â‚¹</span>
                     <span class="price-amount">120</span>
                     <span class="price-unit">/ 200g</span>
                 </div>
@@ -140,11 +119,11 @@
                 </h3>
                 <div class="product-harvest-time">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                    <span>Harvested today, 6:00 AM • Crisp & plump</span>
+                    <span>Harvested today, 6:00 AM â€¢ Crisp & plump</span>
                 </div>
 
                 <div class="product-price-row">
-                    <span class="price-currency">₹</span>
+                    <span class="price-currency">â‚¹</span>
                     <span class="price-amount">75</span>
                     <span class="price-unit">/ 200g</span>
                 </div>
@@ -189,11 +168,11 @@
                 </h3>
                 <div class="product-harvest-time">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                    <span>Oak-log grown • Rich woodsy umami</span>
+                    <span>Oak-log grown â€¢ Rich woodsy umami</span>
                 </div>
 
                 <div class="product-price-row">
-                    <span class="price-currency">₹</span>
+                    <span class="price-currency">â‚¹</span>
                     <span class="price-amount">210</span>
                     <span class="price-unit">/ 200g</span>
                 </div>
@@ -237,11 +216,11 @@
                 </h3>
                 <div class="product-harvest-time">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                    <span>Meaty thick stems • Excellent for pan-searing</span>
+                    <span>Meaty thick stems â€¢ Excellent for pan-searing</span>
                 </div>
 
                 <div class="product-price-row">
-                    <span class="price-currency">₹</span>
+                    <span class="price-currency">â‚¹</span>
                     <span class="price-amount">190</span>
                     <span class="price-unit">/ 200g</span>
                 </div>
@@ -285,11 +264,11 @@
                 </h3>
                 <div class="product-harvest-time">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                    <span>Tropical variety • Extra-long shelf life (6 days)</span>
+                    <span>Tropical variety â€¢ Extra-long shelf life (6 days)</span>
                 </div>
 
                 <div class="product-price-row">
-                    <span class="price-currency">₹</span>
+                    <span class="price-currency">â‚¹</span>
                     <span class="price-amount">95</span>
                     <span class="price-unit">/ 200g</span>
                 </div>
@@ -333,11 +312,11 @@
                 </h3>
                 <div class="product-harvest-time">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                    <span>Naturally dehydrated • Deep broths & gravies</span>
+                    <span>Naturally dehydrated â€¢ Deep broths & gravies</span>
                 </div>
 
                 <div class="product-price-row">
-                    <span class="price-currency">₹</span>
+                    <span class="price-currency">â‚¹</span>
                     <span class="price-amount">299</span>
                     <span class="price-unit">/ 100g</span>
                 </div>
@@ -385,7 +364,7 @@
                 </div>
 
                 <div class="product-price-row">
-                    <span class="price-currency">₹</span>
+                    <span class="price-currency">â‚¹</span>
                     <span class="price-amount">240</span>
                     <span class="price-unit">/ 100g</span>
                 </div>
@@ -433,7 +412,7 @@
                 </div>
 
                 <div class="product-price-row">
-                    <span class="price-currency">₹</span>
+                    <span class="price-currency">â‚¹</span>
                     <span class="price-amount">180</span>
                     <span class="price-unit">/ 200g</span>
                 </div>

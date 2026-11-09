@@ -113,6 +113,6 @@ def get_user_orders(user_id: int) -> list[Any]:
     :param user_id: User identifier.
     :return: List of Order model instances ordered by created_at desc.
     """
-    return Order.query.options(selectinload(Order.items).joinedload(OrderItem.product)).filter_by(
-        user_id=user_id
-    ).order_by(Order.created_at.desc()).all()
+    return Order.query.options(
+        selectinload(Order.items).joinedload(OrderItem.product), joinedload(Order.shipment)
+    ).filter_by(user_id=user_id).order_by(Order.created_at.desc()).all()

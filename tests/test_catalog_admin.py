@@ -1,6 +1,8 @@
 """Catalog, search, seeding, aggregate, and admin workflow coverage."""
 from datetime import datetime, timezone
 from decimal import Decimal
+import pytest
+from sqlalchemy import text
 
 from extensions import db
 from models import Category, Order, OrderItem, Product, User
@@ -91,12 +93,49 @@ def test_admin_pages_and_product_creation_use_database_records(app, client):
     response = client.post("/admin/products/new", data={
         "name": "Created Through Admin", "price": "51.25", "stock": "12",
         "category_id": str(category_id),
+        "thumbnail_url": "https://images.example.test/harvest.jpg",
     })
     assert response.status_code == 302
     with app.app_context():
         created = Product.query.filter_by(name="Created Through Admin").one()
         assert created.price == Decimal("51.25")
         assert created.stock == 12
+        assert created.thumbnail_url == "https://images.example.test/harvest.jpg"
+        created_id = created.id
+    assert b'https://images.example.test/harvest.jpg' in client.get("/").data
+    detail = client.get(f"/product/{created_id}")
+    assert b'https://images.example.test/harvest.jpg' in detail.data
+
+
+def test_product_thumbnail_url_is_optional_and_rejects_unsafe_scheme(app):
+    with app.app_context():
+        category = Category(name="Thumbnail Test")
+        db.session.add(category)
+        db.session.commit()
+
+        product = search_service.create_product("No Thumbnail", 10, 1, category.id)
+        assert product.thumbnail_url is None
+
+        with pytest.raises(ValueError, match="HTTP or HTTPS URL"):
+            search_service.create_product(
+                "Unsafe Thumbnail", 10, 1, category.id, "javascript:alert(1)"
+            )
+
+
+def test_init_db_adds_thumbnail_column_to_existing_product_table(app, runner):
+    with app.app_context():
+        db.drop_all()
+        with db.engine.begin() as connection:
+            connection.execute(text(
+                "CREATE TABLE products (id INTEGER PRIMARY KEY, name VARCHAR(255) NOT NULL, "
+                "price NUMERIC(10, 2) NOT NULL, stock INTEGER NOT NULL, category_id INTEGER)"
+            ))
+
+    result = runner.invoke(args=["init-db"])
+    assert result.exit_code == 0
+    with app.app_context(), db.engine.connect() as connection:
+        columns = {row[1] for row in connection.execute(text("PRAGMA table_info(products)"))}
+        assert "thumbnail_url" in columns
 
 
 def test_analytics_use_ordered_sales_records(app):

@@ -182,21 +182,33 @@ document.addEventListener("DOMContentLoaded", () => {
     const input = stepper.querySelector(".qty-input");
     if (!minusBtn || !plusBtn || !input) return;
 
+    const minimum = Number.parseInt(input.min, 10) || 1;
+    const maximum = Number.parseInt(input.max, 10) || 99;
+    const syncStepperButtons = () => {
+      const value = Number.parseInt(input.value, 10) || minimum;
+      minusBtn.disabled = value <= minimum;
+      plusBtn.disabled = value >= maximum;
+    };
+    input.addEventListener("input", syncStepperButtons);
+    syncStepperButtons();
+
     minusBtn.addEventListener("click", () => {
-      let val = parseInt(input.value, 10) || 1;
-      if (val > 1) {
+      let val = Number.parseInt(input.value, 10) || minimum;
+      if (val > minimum) {
         val -= 1;
         input.value = val;
         input.dispatchEvent(new Event("change", { bubbles: true }));
+        syncStepperButtons();
       }
     });
 
     plusBtn.addEventListener("click", () => {
-      let val = parseInt(input.value, 10) || 1;
-      if (val < 99) {
+      let val = Number.parseInt(input.value, 10) || minimum;
+      if (val < maximum) {
         val += 1;
         input.value = val;
         input.dispatchEvent(new Event("change", { bubbles: true }));
+        syncStepperButtons();
       }
     });
   });

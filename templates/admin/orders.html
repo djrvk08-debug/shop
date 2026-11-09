@@ -78,7 +78,7 @@
                         <th>Delivery Slot</th>
                         <th>Order Status</th>
                         <th class="text-right">Total (₹)</th>
-                        <th class="text-right">Actions</th>
+                        <th class="text-right">Shipment status</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -88,7 +88,7 @@
                         <td>{% for item in order.items %}{{ item.product.name }} × {{ item.quantity }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
                         <td>—</td><td>{{ order.status|title }}</td>
                         <td class="text-right">₹{{ '%.2f'|format(order.total) }}</td>
-                        <td class="text-right">{% if order.shipment %}<a href="{{ url_for('tracking.track_shipment', tracking_number=order.shipment.tracking_number) }}" class="btn btn-sm btn-secondary">Track</a>{% else %}—{% endif %}</td>
+                        <td class="text-right">{% if order.shipment %}{{ order.shipment.status|replace('_', ' ')|title }}{% else %}—{% endif %}</td>
                     </tr>
                     {% else %}<tr><td colspan="8">No orders found.</td></tr>{% endfor %}
                     {% else %}
@@ -104,7 +104,7 @@
                         <td><span class="badge badge-shipped">shipped (In Transit)</span></td>
                         <td class="text-right"><strong>₹479</strong></td>
                         <td class="text-right">
-                            <a href="{{ url_for('tracking.track_shipment', tracking_number='TRK-TEST12345') }}" class="btn btn-sm btn-secondary">Track</a>
+                            <span class="badge badge-shipped">In Transit</span>
                         </td>
                     </tr>
                     <tr>

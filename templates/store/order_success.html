@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Order placed | Dharti Fresh{% endblock %}
+
+{% block content %}
+<section class="order-success" aria-labelledby="order-success-title">
+    <div class="order-success-card">
+        <div class="order-success-mark" aria-hidden="true">&#10003;</div>
+        <p class="order-success-eyebrow">Thank you for your order</p>
+        <h1 id="order-success-title">
+            {% if order.shipment and order.shipment.status in ['dispatched', 'picked_up', 'in_transit', 'out_for_delivery'] %}Your order is on the way
+            {% elif order.shipment and order.shipment.status == 'delivered' %}Your order has been delivered
+            {% elif order.status in ['cancelled', 'returned', 'refunded'] %}Order update
+            {% else %}Order placed successfully{% endif %}
+        </h1>
+        <p class="order-success-copy">
+            {% if order.shipment and order.shipment.status == 'pending' %}Your order is awaiting harvest. This page will update when it is harvested, dispatched, and delivered.
+            {% elif order.shipment and order.shipment.status == 'harvested' %}Your mushrooms have been harvested and are waiting for dispatch.
+            {% elif order.shipment and order.shipment.status in ['dispatched', 'picked_up', 'in_transit', 'out_for_delivery'] %}Your fresh harvest is on the way to you.
+            {% elif order.shipment and order.shipment.status == 'delivered' %}Your fresh harvest has reached its destination.
+            {% elif order.status == 'cancelled' %}This order has been cancelled.
+            {% elif order.status == 'returned' %}This order has been returned.
+            {% elif order.status == 'refunded' %}This order has been refunded.
+            {% else %}We have received your order. Tracking will update as your harvest is prepared and delivered.{% endif %}
+        </p>
+
+        <ol class="order-progress" aria-label="Delivery progress">
+            {% if milestones %}
+            {% for milestone in milestones %}
+            <li class="order-progress-step{% if milestone.complete %} is-complete{% endif %}{% if milestone.current %} is-current{% endif %}"{% if milestone.current %} aria-current="step"{% endif %}>
+                <span class="order-progress-dot" aria-hidden="true">{% if milestone.complete %}&#10003;{% else %}{{ loop.index }}{% endif %}</span>
+                <span>{{ milestone.label }}</span>
+            </li>
+            {% endfor %}
+            {% else %}
+            {% for label in ['Harvested', 'Dispatched', 'Delivered'] %}
+            <li class="order-progress-step is-upcoming"><span class="order-progress-dot" aria-hidden="true">{{ loop.index }}</span><span>{{ label }}</span></li>
+            {% endfor %}
+            {% endif %}
+        </ol>
+        {% if not milestones and order.status not in ['cancelled', 'returned', 'refunded'] %}<p class="order-progress-note">Tracking starts when your order enters farm preparation.</p>{% endif %}
+
+        <div class="order-success-summary">
+            <span>Order number</span><strong>#{{ order.id }}</strong>
+            <span>Order status</span><strong class="order-status">{{ order.status|title }}</strong>
+        </div>
+
+        <div class="order-success-items" aria-label="Items in your order">
+            {% for item in order.items %}
+            <div class="order-success-item">
+                <span>{{ item.product.name }} <span class="order-success-quantity">× {{ item.quantity }}</span></span>
+                <strong>₹{{ '%.2f'|format(item.unit_price * item.quantity) }}</strong>
+            </div>
+            {% endfor %}
+            <div class="order-success-total"><span>Total</span><strong>₹{{ '%.2f'|format(order.total) }}</strong></div>
+        </div>
+
+        <div class="order-success-actions">
+            <a class="btn btn-accent" href="{{ url_for('tracking.my_orders') }}">View my orders</a>
+            <a class="btn btn-primary" href="{{ url_for('store.home') }}">Continue shopping</a>
+            <a class="btn btn-outline" href="{{ url_for('cart.view_cart') }}">View cart</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

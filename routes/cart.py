@@ -1,11 +1,12 @@
 """Shopping cart and checkout routing blueprint."""
 from decimal import Decimal
 
-from flask import Blueprint, flash, jsonify, redirect, render_template, request, session, url_for
+from flask import Blueprint, abort, flash, jsonify, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required
 
 from services import cart_service
 from services import order_service
+from services import tracking_service
 
 cart_bp = Blueprint("cart", __name__, url_prefix="/cart")
 
@@ -83,9 +84,12 @@ def checkout():
         except ValueError as error:
             flash(str(error), "warning")
             return redirect(url_for("cart.view_cart"))
+        tracking_service.create_shipment(
+            order.id, "Dharti Farm Delivery", f"DF-{order.id:06d}"
+        )
         session.pop("cart", None)
         flash(f"Order #{order.id} placed successfully.", "success")
-        return redirect(url_for("store.home"))
+        return redirect(url_for("cart.order_confirmation", order_id=order.id))
 
     try:
         items = cart_service.get_cart_items(session.get("cart", {}))
@@ -94,3 +98,16 @@ def checkout():
         flash(str(error), "warning")
         return redirect(url_for("cart.view_cart"))
     return render_template("store/checkout.html", cart_items=items, cart_total=cart_total)
+
+
+@cart_bp.route("/orders/<int:order_id>")
+@login_required
+def order_confirmation(order_id):
+    """Show confirmation only to the customer who placed the order."""
+    order = order_service.get_order(order_id)
+    if order is None or order.user_id != current_user.id:
+        abort(404)
+    return render_template(
+        "store/order_success.html", order=order,
+        milestones=tracking_service.get_milestones(order.shipment) if order.shipment else None,
+    )

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}My Orders | Dharti Fresh{% endblock %}
+
+{% block content %}
+<section class="my-tracking" aria-labelledby="my-tracking-title">
+    <header class="my-tracking-header">
+        <span class="my-tracking-eyebrow">Your account</span>
+        <h1 id="my-tracking-title">My orders</h1>
+        <p>Your order details and delivery status in one place.</p>
+    </header>
+
+    <div class="my-tracking-list">
+        {% for order in orders %}
+        {% set status = order.shipment.status if order.shipment else order.status %}
+        <div class="order-card" role="group" aria-label="Order #{{ order.id }}">
+            <header class="order-card-header">
+                <div class="order-card-identifiers">
+                    <span class="order-card-id">Order #{{ order.id }}</span>
+                    {% if order.shipment %}
+                    <span class="order-card-tracking">Tracking · {{ order.shipment.tracking_number }}</span>
+                    {% endif %}
+                </div>
+                <span class="order-card-status status-{{ status|replace('_', '-') }}">{{ status|replace('_', ' ')|title }}</span>
+            </header>
+
+            <div class="order-card-body">
+                <div class="order-card-summary">
+                    <span class="order-card-date">{{ order.created_at.strftime('%d %b %Y') }}</span>
+                    <strong class="order-card-total">&#8377;{{ '%.2f'|format(order.total) }}</strong>
+                </div>
+                <ul class="order-card-items" aria-label="Items in order {{ order.id }}">
+                    {% for item in order.items %}
+                    <li><span>{{ item.product.name }}</span><span class="order-card-quantity">&times; {{ item.quantity }}</span></li>
+                    {% endfor %}
+                </ul>
+                {% if not order.shipment %}
+                <p class="order-card-note">Tracking will be available when farm preparation begins.</p>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state my-tracking-empty">
+            <div class="my-tracking-empty-icon" aria-hidden="true">&#128722;</div>
+            <h2>No orders yet</h2>
+            <p>Your orders and delivery status will appear here after checkout.</p>
+            <a class="btn btn-primary" href="{{ url_for('store.home') }}">Browse the farm catalog</a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

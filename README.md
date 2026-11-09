@@ -101,6 +101,7 @@ cp .env.example .env
 flask init-db
 flask create-admin
 ```
+`flask init-db` also adds the optional `thumbnail_url` column to existing product tables.
 > **Admin Credentials**:
 > - Default email: `admin@example.com` (configurable via `ADMIN_EMAIL` environment variable or `--email`)
 > - Default password: `admin123` (configurable via `ADMIN_PASSWORD` environment variable or `--password`)
@@ -137,4 +138,4 @@ pytest
 - **Carrier updates**: Configure `CARRIER_WEBHOOK_TOKEN` and send it as the `X-Carrier-Token` header when posting carrier events.
 - **Application support**: Centralized validation, 400, 404, and 500 responses plus cart-count and year template context.
 
-Catalog indexes are declared on the models and are also ensured by `flask init-db` for existing databases. No model columns were added, so no migration file is required.
+Catalog indexes are declared on the models and are also ensured by `flask init-db` for existing databases. The command adds newly introduced optional product columns to existing SQLite databases.

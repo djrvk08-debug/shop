@@ -181,7 +181,7 @@
                             <td>{% for item in order.items %}{{ item.product.name }} × {{ item.quantity }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
                             <td>—</td><td>{{ order.status|title }}</td>
                             <td class="text-right">₹{{ '%.2f'|format(order.total) }}</td>
-                            <td class="text-right">{% if order.shipment %}<a href="{{ url_for('tracking.track_shipment', tracking_number=order.shipment.tracking_number) }}" class="btn btn-sm btn-secondary">Track</a>{% else %}—{% endif %}</td>
+                            <td class="text-right">{% if order.shipment %}{{ order.shipment.status|replace('_', ' ')|title }}{% else %}—{% endif %}</td>
                         </tr>
                     {% else %}<tr><td colspan="7">No orders yet.</td></tr>{% endfor %}</tbody>
                 </table>

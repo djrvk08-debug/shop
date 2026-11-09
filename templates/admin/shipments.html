@@ -76,7 +76,7 @@
                         <th>Live Temp</th>
                         <th>Status</th>
                         <th>Estimated ETA</th>
-                        <th class="text-right">Actions</th>
+                        <th class="text-right">Update status</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -86,7 +86,18 @@
                         <td><code>{{ shipment.tracking_number }}</code></td><td>—</td>
                         <td>{{ shipment.status|replace('_', ' ')|title }}</td>
                         <td>{{ shipment.eta.strftime('%Y-%m-%d %H:%M') if shipment.eta else '—' }}</td>
-                        <td class="text-right"><a href="{{ url_for('tracking.track_shipment', tracking_number=shipment.tracking_number) }}" class="btn btn-sm btn-secondary">Live Track</a></td>
+                        <td class="text-right">
+                            {% set next_statuses = shipment_transitions.get(shipment.id, []) %}
+                            {% if next_statuses %}
+                            <form action="{{ url_for('admin.update_shipment_status', shipment_id=shipment.id) }}" method="post" class="shipment-status-form">
+                                <label class="sr-only" for="shipment-status-{{ shipment.id }}">Update status for shipment {{ shipment.id }}</label>
+                                <select class="form-control" name="status" id="shipment-status-{{ shipment.id }}" required>
+                                    {% for next_status in next_statuses %}<option value="{{ next_status }}">{{ next_status|replace('_', ' ')|title }}</option>{% endfor %}
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-primary">Update</button>
+                            </form>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% else %}<tr><td colspan="8">No shipments found.</td></tr>{% endfor %}
                     {% else %}
@@ -99,7 +110,7 @@
                         <td><span class="badge badge-shipped">In Transit</span></td>
                         <td>Today 9:15 AM</td>
                         <td class="text-right">
-                            <a href="{{ url_for('tracking.track_shipment', tracking_number='TRK-TEST12345') }}" class="btn btn-sm btn-secondary">Live Track</a>
+                            <span class="badge badge-shipped">In Transit</span>
                         </td>
                     </tr>
                     <tr>
@@ -111,7 +122,7 @@
                         <td><span class="badge badge-shipped">Out for Delivery</span></td>
                         <td>Today 8:30 AM</td>
                         <td class="text-right">
-                            <a href="{{ url_for('tracking.track_shipment', tracking_number='TRK-BLR-8921') }}" class="btn btn-sm btn-secondary">Live Track</a>
+                            <span class="badge badge-shipped">Out for Delivery</span>
                         </td>
                     </tr>
                     <tr>

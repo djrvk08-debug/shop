@@ -1,4 +1,4 @@
-const CACHE_NAME = "dharti-fresh-v1";
+const CACHE_NAME = "dharti-fresh-v2";
 const APP_SHELL = [
   "/",
   "/static/manifest.json",

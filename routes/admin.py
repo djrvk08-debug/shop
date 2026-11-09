@@ -4,7 +4,7 @@ from flask_login import current_user
 from sqlalchemy.orm import joinedload, selectinload
 from extensions import db
 from models import Order, OrderItem, Product, Shipment, User
-from services import analytics_service, search_service
+from services import analytics_service, search_service, tracking_service
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -52,6 +52,7 @@ def product_create():
             product = search_service.create_product(
                 request.form.get("name", ""), request.form.get("price", ""),
                 request.form.get("stock", ""), request.form.get("category_id", ""),
+                request.form.get("thumbnail_url", ""),
             )
         except ValueError as error:
             flash(str(error), "danger")
@@ -75,7 +76,31 @@ def shipments():
     """Display and manage logistics shipments and fulfillment statuses."""
     shipments = Shipment.query.options(joinedload(Shipment.order), selectinload(Shipment.events))\
         .order_by(Shipment.created_at.desc()).all()
-    return render_template("admin/shipments.html", shipments=shipments)
+    return render_template(
+        "admin/shipments.html", shipments=shipments,
+        shipment_transitions={
+            shipment.id: tracking_service.DELIVERY_STATUS_TRANSITIONS.get(shipment.status, [])
+            for shipment in shipments
+        },
+    )
+
+
+@admin_bp.route("/shipments/<int:shipment_id>/status", methods=["POST"])
+def update_shipment_status(shipment_id):
+    """Record an authorized shipment milestone and refresh the admin shipment list."""
+    shipment = db.session.get(Shipment, shipment_id)
+    if shipment is None:
+        abort(404)
+    try:
+        tracking_service.add_event(
+            shipment.tracking_number, request.form.get("status", ""),
+            location=request.form.get("location"), note=request.form.get("note"),
+        )
+    except ValueError as error:
+        flash(str(error), "danger")
+    else:
+        flash(f"Shipment #{shipment.id} status updated.", "success")
+    return redirect(url_for("admin.shipments"))
 
 
 @admin_bp.route("/users")

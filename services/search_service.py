@@ -1,6 +1,7 @@
 """Catalog search service using an inverted index for keyword search and a trie for autocomplete."""
 import re
 from decimal import Decimal
+from urllib.parse import urlsplit
 
 from extensions import db
 from models import Category, Product
@@ -145,7 +146,8 @@ def seed_sample_data() -> None:
     db.session.commit()
 
 
-def create_product(name: str, price: Decimal, stock: int, category_id: int) -> Product:
+def create_product(name: str, price: Decimal, stock: int, category_id: int,
+                   thumbnail_url: str | None = None) -> Product:
     name = name.strip() if isinstance(name, str) else ""
     if not name or len(name) > 255:
         raise ValueError("Product name must contain 1 to 255 characters.")
@@ -157,10 +159,22 @@ def create_product(name: str, price: Decimal, stock: int, category_id: int) -> P
         raise ValueError("Price, stock, and category must be valid values.")
     if not price.is_finite() or price <= 0 or stock < 0:
         raise ValueError("Price must be positive and stock cannot be negative.")
+    thumbnail_url = thumbnail_url.strip() if isinstance(thumbnail_url, str) else ""
+    if thumbnail_url:
+        try:
+            parsed_url = urlsplit(thumbnail_url)
+        except ValueError as error:
+            raise ValueError("Thumbnail must be a valid HTTP or HTTPS URL.") from error
+        if (len(thumbnail_url) > 2048 or parsed_url.scheme not in {"http", "https"}
+                or not parsed_url.netloc or parsed_url.username or parsed_url.password):
+            raise ValueError("Thumbnail must be a valid HTTP or HTTPS URL.")
+    else:
+        thumbnail_url = None
     category = db.session.get(Category, category_id)
     if category is None:
         raise ValueError("Select a valid product category.")
-    product = Product(name=name, price=price, stock=stock, category=category)
+    product = Product(name=name, price=price, stock=stock, category=category,
+                      thumbnail_url=thumbnail_url)
     db.session.add(product)
     db.session.commit()
     return product

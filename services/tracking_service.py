@@ -9,7 +9,9 @@ from models import Order, Shipment, TrackingEvent
 
 # State machine defining valid delivery progression transitions
 DELIVERY_STATUS_TRANSITIONS: dict[str, list[str]] = {
-    "pending": ["picked_up", "cancelled"],
+    "pending": ["harvested", "picked_up", "cancelled"],
+    "harvested": ["dispatched", "picked_up", "cancelled"],
+    "dispatched": ["in_transit", "out_for_delivery", "failed_attempt", "exception", "delivered"],
     "picked_up": ["in_transit", "cancelled"],
     "in_transit": ["out_for_delivery", "failed_attempt", "exception"],
     "failed_attempt": ["in_transit", "returned_to_sender"],
@@ -19,6 +21,28 @@ DELIVERY_STATUS_TRANSITIONS: dict[str, list[str]] = {
     "returned_to_sender": [],
     "cancelled": [],
 }
+
+
+def get_milestones(shipment: Any) -> list[dict[str, Any]]:
+    """Return harvested, dispatched, and delivered milestones for a shipment."""
+    reached_statuses = {event.status for event in shipment.events}
+    reached_statuses.add(shipment.status)
+    harvested = bool(reached_statuses & {
+        "harvested", "dispatched", "picked_up", "in_transit", "out_for_delivery",
+        "failed_attempt", "exception", "delivered",
+    })
+    dispatched = bool(reached_statuses & {
+        "dispatched", "picked_up", "in_transit", "out_for_delivery", "failed_attempt",
+        "exception", "delivered",
+    })
+    delivered = "delivered" in reached_statuses
+    complete = [harvested, dispatched, delivered]
+    stopped = shipment.status in {"pending", "cancelled", "returned_to_sender"}
+    current_index = None if stopped else next((i for i, is_done in enumerate(complete) if not is_done), 2)
+    return [
+        {"label": label, "complete": is_done, "current": index == current_index}
+        for index, (label, is_done) in enumerate(zip(("Harvested", "Dispatched", "Delivered"), complete))
+    ]
 
 
 def create_shipment(
@@ -40,8 +64,8 @@ def create_shipment(
     if not tracking_number or len(tracking_number) > 100:
         raise ValueError("A valid tracking number is required.")
     order = db.session.get(Order, order_id)
-    if order is None or order.status not in {"paid", "processing"}:
-        raise ValueError("Shipment requires an existing paid or processing order.")
+    if order is None or order.status not in {"pending", "paid", "processing"}:
+        raise ValueError("Shipment requires an existing open order.")
     if Shipment.query.filter_by(order_id=order_id).first():
         raise ValueError("This order already has a shipment.")
     if Shipment.query.filter_by(tracking_number=tracking_number).first():

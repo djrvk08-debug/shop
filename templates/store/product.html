@@ -9,6 +9,13 @@
 {% block content %}
 {% if product is defined and product %}
 <section class="product-detail-layout">
+    {% if product.thumbnail_url %}
+    <div class="product-detail-gallery">
+        <div class="product-detail-hero-img">
+            <img src="{{ product.thumbnail_url }}" alt="{{ product.name }}" loading="eager" decoding="async">
+        </div>
+    </div>
+    {% endif %}
     <div class="product-detail-info">
         <nav><a href="{{ url_for('store.home') }}">Home</a> / {{ product.category.name if product.category else 'Catalog' }}</nav>
         <h1 class="product-detail-title">{{ product.name }}</h1>

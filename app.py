@@ -3,7 +3,7 @@ import os
 import click
 from datetime import datetime, timezone
 from flask import Flask, jsonify, render_template, request, send_from_directory, session
-from sqlalchemy import text
+from sqlalchemy import inspect, text
 from config import Config, config_by_name
 from extensions import db, login_manager
 from models import User
@@ -90,6 +90,11 @@ def create_app(config_class=None) -> Flask:
         """Create database tables and seed the initial catalog."""
         db.create_all()
         with db.engine.begin() as connection:
+            product_columns = {column["name"] for column in inspect(connection).get_columns("products")}
+            if "thumbnail_url" not in product_columns:
+                connection.execute(text(
+                    "ALTER TABLE products ADD COLUMN thumbnail_url VARCHAR(2048)"
+                ))
             connection.execute(text("CREATE INDEX IF NOT EXISTS ix_categories_name ON categories (name)"))
             connection.execute(text("CREATE INDEX IF NOT EXISTS ix_products_category_id ON products (category_id)"))
         from services.search_service import seed_sample_data

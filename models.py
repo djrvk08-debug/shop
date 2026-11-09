@@ -56,10 +56,11 @@ class Product(db.Model):
     name = db.Column(db.String(255), nullable=False, index=True)
     price = db.Column(db.Numeric(10, 2), nullable=False)
     stock = db.Column(db.Integer, default=0, nullable=False)
+    thumbnail_url = db.Column(db.String(2048), nullable=True)
     category_id = db.Column(db.Integer, db.ForeignKey("categories.id"), nullable=True, index=True)
     category = db.relationship("Category", backref=db.backref("products", lazy=True))
 
-    # TODO: Add description, SKU, image_url, and active status fields
+    # TODO: Add description, SKU, and active status fields
     # TODO: Add relationship to OrderItem
 
 

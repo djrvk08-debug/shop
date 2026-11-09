@@ -1,20 +1,25 @@
 """Delivery tracking blueprint for customer status inquiries and carrier webhook ingestion."""
 import hmac
-from flask import Blueprint, abort, current_app, jsonify, render_template, request
+from flask import Blueprint, current_app, jsonify, redirect, render_template, request, url_for
+from flask_login import current_user, login_required
+from services import order_service
 from services import tracking_service
 
 tracking_bp = Blueprint("tracking", __name__)
 
 
+@tracking_bp.route("/track")
+@login_required
+def my_orders():
+    """List the signed-in customer's order details and delivery progress."""
+    orders = order_service.get_user_orders(current_user.id)
+    return render_template("store/my_tracking.html", orders=orders)
+
+
 @tracking_bp.route("/track/<string:tracking_number>")
 def track_shipment(tracking_number: str):
-    """Render public delivery progress tracking page for a given tracking number."""
-    shipment = tracking_service.get_shipment_by_tracking(tracking_number)
-    if shipment is None:
-        abort(404)
-    return render_template("store/track.html", tracking_number=tracking_number,
-                           shipment=shipment,
-                           eta=shipment.eta or tracking_service.calculate_eta(shipment.id))
+    """Keep legacy tracking links on the single combined orders and tracking page."""
+    return redirect(url_for("tracking.my_orders"))
 
 
 @tracking_bp.route("/webhook/carrier", methods=["POST"])

@@ -25,7 +25,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/store.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/store.css', v=2) }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/tracking.css') }}">
 
@@ -70,7 +70,7 @@
                 <!-- Navigation Actions -->
                 <div class="nav-actions">
                     <a href="{{ url_for('store.home') }}" class="nav-link">Shop</a>
-                    <a href="{{ url_for('tracking.track_shipment', tracking_number='TRK-TEST12345') }}" class="nav-link" title="Cold-chain delivery tracking">
+                    <a href="{{ url_for('tracking.my_orders') }}" class="nav-link" title="Cold-chain delivery tracking">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
                         <span>Track</span>
                     </a>
@@ -105,7 +105,7 @@
                 <button type="submit" class="search-submit-btn">Search</button>
             </form>
             <a href="{{ url_for('store.home') }}" class="nav-link">Fresh Mushrooms</a>
-            <a href="{{ url_for('tracking.track_shipment', tracking_number='TRK-TEST12345') }}" class="nav-link">Track Delivery</a>
+            <a href="{{ url_for('tracking.my_orders') }}" class="nav-link">Track Delivery</a>
             <a href="{{ url_for('cart.view_cart') }}" class="nav-link">Cart ({{ cart_item_count }})</a>
             {% if current_user.is_authenticated %}
                 {% if current_user.is_admin %}
@@ -175,7 +175,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>
             <span>Shop</span>
         </a>
-        <a href="{{ url_for('tracking.track_shipment', tracking_number='TRK-TEST12345') }}" class="mobile-bottom-nav-item{% if request.endpoint == 'tracking.track_shipment' %} active{% endif %}">
+        <a href="{{ url_for('tracking.my_orders') }}" class="mobile-bottom-nav-item{% if request.endpoint == 'tracking.my_orders' %} active{% endif %}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
             <span>Track</span>
         </a>
@@ -222,7 +222,7 @@
                     <ul class="footer-links">
                         <li><a href="#storage-tips">Storage Tips: Keep in paper bag, refrigerate</a></li>
                         <li><a href="#shelf-life">Shelf Life Guide: Best within 4 days</a></li>
-                        <li><a href="{{ url_for('tracking.track_shipment', tracking_number='TRK-TEST12345') }}">Cold-Chain Delivery Tracking</a></li>
+                        <li><a href="{{ url_for('tracking.my_orders') }}">Cold-Chain Delivery Tracking</a></li>
                         <li><a href="{{ url_for('store.home') }}">Cooking Ideas & Pairings</a></li>
                         <li><a href="{{ url_for('cart.view_cart') }}">Shopping Cart</a></li>
                     </ul>
