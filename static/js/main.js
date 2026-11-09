@@ -260,37 +260,22 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  /* ==========================================================================
-     8. Category Chips Filter (Instant Client-side Filter)
-     ========================================================================== */
-  const chips = document.querySelectorAll(".chip[data-category]");
-  const productCards = document.querySelectorAll(".product-card[data-category]");
-  chips.forEach((chip) => {
-    chip.addEventListener("click", () => {
-      chips.forEach((c) => c.classList.remove("active"));
-      chip.classList.add("active");
-
-      const cat = chip.dataset.category;
-      productCards.forEach((card) => {
-        if (cat === "all" || card.dataset.category === cat) {
-          card.style.display = "flex";
-        } else {
-          card.style.display = "none";
-        }
-      });
+  document.querySelectorAll("[data-otp-inputs]").forEach((container) => {
+    const digits = [...container.querySelectorAll("[data-otp-digit]")];
+    const hidden = container.parentElement.querySelector("[data-otp-value]");
+    const sync = () => { if (hidden) hidden.value = digits.map((input) => input.value).join(""); };
+    digits.forEach((input, index) => {
+      input.addEventListener("input", () => { input.value = input.value.replace(/\D/g, "").slice(-1); if (input.value && digits[index + 1]) digits[index + 1].focus(); sync(); });
+      input.addEventListener("keydown", (event) => { if (event.key === "Backspace" && !input.value && digits[index - 1]) digits[index - 1].focus(); });
+      input.addEventListener("paste", (event) => { const pasted = (event.clipboardData.getData("text") || "").replace(/\D/g, "").slice(0, 6); if (!pasted) return; event.preventDefault(); pasted.split("").forEach((value, offset) => { if (digits[index + offset]) digits[index + offset].value = value; }); sync(); digits[Math.min(index + pasted.length, 5)].focus(); });
     });
+    digits[0]?.focus();
   });
 
-  /* ==========================================================================
-     9. Demo Admin Auto-Fill Button
-     ========================================================================== */
-  const fillAdminBtn = document.getElementById("fill-admin-btn");
-  if (fillAdminBtn) {
-    fillAdminBtn.addEventListener("click", () => {
-      const emailInput = document.getElementById("email");
-      const passInput = document.getElementById("password");
-      if (emailInput) emailInput.value = "admin@example.com";
-      if (passInput) passInput.value = "admin123";
-    });
+  const resendButton = document.querySelector("[data-resend]");
+  const countdown = document.querySelector("[data-countdown]");
+  if (resendButton && countdown) {
+    let remaining = Number.parseInt(countdown.textContent, 10) || 45;
+    const timer = setInterval(() => { remaining -= 1; countdown.textContent = remaining; if (remaining <= 0) { clearInterval(timer); resendButton.disabled = false; resendButton.textContent = "Resend code"; } }, 1000);
   }
 });

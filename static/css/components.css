@@ -444,6 +444,13 @@
   border-color: var(--color-accent);
 }
 
+.mobile-input-group { display: flex; align-items: stretch; }
+.mobile-prefix { display: inline-flex; align-items: center; padding: 0 var(--space-3); border: 1px solid var(--color-line); border-right: 0; border-radius: var(--radius-control) 0 0 var(--radius-control); background: var(--color-surface-subtle); color: var(--color-text-muted); font-weight: 700; }
+.mobile-input-group .form-control { border-radius: 0 var(--radius-control) var(--radius-control) 0; }
+.otp-inputs { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--space-2); margin: var(--space-5) 0; }
+.otp-inputs input { width: 100%; min-height: 52px; border: 1px solid var(--color-line); border-radius: var(--radius-control); background: var(--color-surface-subtle); color: var(--color-text); text-align: center; font-size: var(--text-xl); font-weight: 700; }
+.otp-inputs input:focus { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+
 .form-control.has-error {
   border-color: var(--color-danger);
 }
@@ -553,53 +560,6 @@ textarea.form-control {
   cursor: not-allowed;
   background-color: var(--color-bg);
   border-color: var(--color-line-light);
-}
-
-/* ==========================================================================
-   Category Chips / Filter Tabs
-   ========================================================================== */
-.chips-wrapper {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  overflow-x: auto;
-  padding-bottom: var(--space-2);
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-}
-
-.chips-wrapper::-webkit-scrollbar {
-  display: none;
-}
-
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-height: var(--touch-target-min); /* 44px tap target */
-  padding: 0 var(--space-4);
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-pill);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--color-text-muted);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all var(--transition-fast);
-}
-
-.chip:hover {
-  background-color: var(--color-secondary-light);
-  color: var(--color-primary);
-  border-color: var(--color-secondary-dark);
-}
-
-.chip.active {
-  background-color: var(--color-primary);
-  color: #FFFFFF;
-  border-color: var(--color-primary);
-  box-shadow: var(--shadow-sm);
 }
 
 /* ==========================================================================

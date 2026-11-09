@@ -18,7 +18,7 @@ shop/
 ├── app.py                    # Application factory create_app(), registers all blueprints
 ├── config.py                 # Configuration classes: Config, DevelopmentConfig, TestingConfig, ProductionConfig
 ├── extensions.py             # Shared extension instances: db, login_manager
-├── models.py                 # SQLAlchemy model stubs (User, Category, Product, Order, OrderItem, Shipment, TrackingEvent)
+├── models.py                 # SQLAlchemy models (User, Product, Order, OrderItem, Shipment, TrackingEvent)
 ├── routes/
 │   ├── __init__.py           # Blueprint package initialization
 │   ├── auth.py               # Authentication routes (/auth/login, /auth/register, /auth/logout)
@@ -32,7 +32,7 @@ shop/
 │   ├── search_service.py     # Inverted index keyword search & prefix trie autocomplete
 │   ├── order_service.py      # Checkout workflow & ORDER_STATUS_TRANSITIONS state machine
 │   ├── tracking_service.py   # Carrier events & DELIVERY_STATUS_TRANSITIONS state machine
-│   ├── notify_service.py     # Email/SMS notification dispatch queues
+│   ├── notify_service.py     # SMS notification dispatch queue
 │   └── analytics_service.py  # Min-heap best sellers, daily revenue, and shipment status metrics
 ├── templates/
 │   ├── base.html             # Shared navigation layout and flash messages
@@ -101,11 +101,15 @@ cp .env.example .env
 flask init-db
 flask create-admin
 ```
-`flask init-db` also adds the optional `thumbnail_url` column to existing product tables.
+`flask init-db` creates the OTP tables and adds mobile columns to existing user tables. It also adds the optional `thumbnail_url` column to existing product tables. The legacy email column is retained as optional support data and is never used for login.
 > **Admin Credentials**:
-> - Default email: `admin@example.com` (configurable via `ADMIN_EMAIL` environment variable or `--email`)
+> - Admin mobile: `+919876543210` (configurable via `ADMIN_MOBILE` environment variable or `--mobile`)
 > - Default password: `admin123` (configurable via `ADMIN_PASSWORD` environment variable or `--password`)
 > - In production, always set a strong `ADMIN_PASSWORD` in your secret environment store.
+
+For an existing account without a mobile, first back up the database, then run
+`flask set-user-mobile --user-id <id> --mobile +91XXXXXXXXXX`. Do not delete
+the retained email column without a separate migration decision.
 
 ### 6. Run the Application
 ```bash
@@ -124,18 +128,39 @@ pytest
 
 ### Completed
 
-- [x] **Authentication**: Registration, login, logout, and password hashing are implemented and covered by `tests/test_auth.py`.
+- [x] **Authentication**: Mobile-number registration/login with E.164 normalization, password hashing, SMS OTP verification, reset-password OTP, resend limits, and generic errors are covered by `tests/test_auth.py`.
 - [x] **Application setup**: The application factory, blueprint registration, and `init-db` / `create-admin` CLI commands are implemented.
 - [x] **Basic route smoke tests**: Authentication pages, the public tracking page, and the cart add endpoint have passing tests.
 
 ### Implemented Workflows
 
-- **Catalog and search**: Database-backed catalog, category filtering, pagination, product details, keyword search, autocomplete, and idempotent sample seeding through `flask init-db`.
+- **Catalog and search**: Database-backed catalog with per-pack quantity/weight and price, pagination, product details, keyword search, autocomplete, and idempotent sample seeding through `flask init-db`.
 - **Cart and checkout**: Session quantities are validated against current stock and current database prices; checkout records orders and decrements stock transactionally.
 - **Orders and tracking**: Validated status transitions, shipment records, chronological carrier events, and ETA projection.
 - **Admin and analytics**: Database-backed management pages and SQL-grouped sales, seller, and status metrics.
-- **Notifications**: In-process idempotent queue with retry backoff. Configure `NOTIFICATION_SENDER` as a callable to connect an email/SMS provider; the default keeps messages queued.
+- **Notifications**: In-process idempotent SMS queue with retry backoff. OTP delivery uses `SMS_PROVIDER=console` in debug development or the configured Twilio provider in production.
 - **Carrier updates**: Configure `CARRIER_WEBHOOK_TOKEN` and send it as the `X-Carrier-Token` header when posting carrier events.
 - **Application support**: Centralized validation, 400, 404, and 500 responses plus cart-count and year template context.
 
 Catalog indexes are declared on the models and are also ensured by `flask init-db` for existing databases. The command adds newly introduced optional product columns to existing SQLite databases.
+
+## SMS and OTP production setup
+
+Set `OTP_SECRET` to a long random secret and configure `SMS_PROVIDER=twilio` with
+`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`, and the
+approved `SMS_TEMPLATE_ID`. The console
+provider is disabled unless debug mode is enabled; OTP values are never stored
+or logged outside that development-only provider. OTPs expire after five minutes,
+are single-use, and are limited by mobile number and IP address.
+
+For India, register the sender and message template with the DLT operator before
+production delivery. The approved DLT template ID and sender must be supplied by
+the SMS provider configuration; do not send an unregistered template.
+
+## Database backup and migration
+
+Before running `flask init-db` against an existing database, make a copy of
+`instance/shop.db`. The command preserves existing users and the optional email
+column, adds `mobile`, `mobile_verified`, and `otp_challenges`, and creates a
+unique mobile index. Existing users without a mobile must be migrated with
+`flask set-user-mobile`; they cannot log in until their mobile is attached.

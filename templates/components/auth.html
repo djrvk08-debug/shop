@@ -1,0 +1,7 @@
+{% macro mobile_input(value='') -%}
+<div class="mobile-input-group"><span class="mobile-prefix">+91</span><input type="tel" name="mobile" class="form-control" value="{{ value }}" placeholder="9876543210" inputmode="tel" autocomplete="tel" maxlength="15" required></div>
+{%- endmacro %}
+
+{% macro otp_input() -%}
+<div class="otp-inputs" data-otp-inputs>{% for index in range(6) %}<input type="text" maxlength="1" inputmode="numeric" autocomplete="one-time-code" aria-label="OTP digit {{ index + 1 }}" data-otp-digit>{% endfor %}</div><input type="hidden" name="otp" data-otp-value>
+{%- endmacro %}

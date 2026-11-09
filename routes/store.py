@@ -9,25 +9,18 @@ store_bp = Blueprint("store", __name__)
 def home():
     """Render the public storefront homepage."""
     products = search_service.list_products(per_page=100)
-    return render_template("store/home.html", products=products.items,
-                           categories=search_service.get_categories())
+    return render_template("store/home.html", products=products.items)
 
 
 @store_bp.route("/products")
 def product_list():
-    """Display paginated list of catalog products filtered by optional category."""
-    raw_category = request.args.get("category_id")
-    if raw_category and (not raw_category.isdigit() or int(raw_category) < 1):
-        abort(400)
+    """Display the paginated product catalog."""
     page = request.args.get("page", 1, type=int) or 1
     sort = request.args.get("sort", "name")
     if sort not in {"name", "price", "-price"}:
         abort(400)
-    pagination = search_service.list_products(
-        page=page, category_id=int(raw_category) if raw_category else None, sort=sort
-    )
-    return render_template("store/home.html", products=pagination.items, pagination=pagination,
-                           categories=search_service.get_categories(), category_id=raw_category)
+    pagination = search_service.list_products(page=page, sort=sort)
+    return render_template("store/home.html", products=pagination.items, pagination=pagination)
 
 
 @store_bp.route("/product/<int:product_id>")
@@ -45,8 +38,7 @@ def search():
     query = request.args.get("q", "").strip()
     product_ids = search_service.search_catalog(query)
     products = search_service.products_by_ids(product_ids)
-    return render_template("store/home.html", products=products,
-                           categories=search_service.get_categories(), search_query=query)
+    return render_template("store/home.html", products=products, search_query=query)
 
 
 @store_bp.get("/autocomplete")

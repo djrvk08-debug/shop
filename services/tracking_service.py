@@ -115,10 +115,10 @@ def add_event(
     shipment.status = status
     db.session.add(event)
     db.session.commit()
-    if shipment.order.user:
+    if shipment.order.user and shipment.order.user.mobile:
         from services.notify_service import queue_notification
         queue_notification(
-            recipient=shipment.order.user.email, channel="email",
+            recipient=shipment.order.user.mobile, channel="sms",
             subject=f"Shipment {shipment.tracking_number} update",
             message=f"Shipment status is now {status.replace('_', ' ')}.",
             context={"tracking_number": shipment.tracking_number, "status": status},

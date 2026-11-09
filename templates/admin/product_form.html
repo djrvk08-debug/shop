@@ -1,138 +1,72 @@
-{#
-  Admin Product Creation Form: 2-Column Responsive Layout (Desktop) / 1-Column (Mobile),
-  and Primary Action Placed at Bottom Right.
-#}
 {% extends "base.html" %}
 
 {% block title %}Add New Mushroom Harvest | Dharti Admin{% endblock %}
 
 {% block content %}
 <div class="admin-mobile-bar">
-    <span class="admin-mobile-title">Add Harvest Lot</span>
+    <span class="admin-mobile-title">Add Product</span>
     <a href="{{ url_for('admin.products') }}" class="btn btn-sm btn-secondary">&larr; Back to Products</a>
 </div>
 
 <div class="admin-layout-container">
-    <!-- Sidebar -->
     <aside class="admin-sidebar">
-        <div class="admin-sidebar-header">
-            <span class="admin-sidebar-title">Operations Portal</span>
-        </div>
+        <div class="admin-sidebar-header"><span class="admin-sidebar-title">Operations Portal</span></div>
         <ul class="admin-sidebar-nav">
-            <li class="admin-nav-item">
-                <a href="{{ url_for('admin.dashboard') }}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                    <span>Dashboard</span>
-                </a>
-            </li>
-            <li class="admin-nav-item active">
-                <a href="{{ url_for('admin.products') }}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2 0-5.52-4.48-10-10-10zM10 15v5a2 2 0 0 0 4 0v-5h-4z"/></svg>
-                    <span>Products (8)</span>
-                </a>
-            </li>
-            <li class="admin-nav-item">
-                <a href="{{ url_for('admin.orders') }}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-                    <span>Orders (24)</span>
-                </a>
-            </li>
-            <li class="admin-nav-item">
-                <a href="{{ url_for('admin.shipments') }}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-                    <span>Shipments (4 Active)</span>
-                </a>
-            </li>
-            <li class="admin-nav-item">
-                <a href="{{ url_for('admin.users') }}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                    <span>Staff & Users</span>
-                </a>
-            </li>
+            <li class="admin-nav-item"><a href="{{ url_for('admin.dashboard') }}"><span>Dashboard</span></a></li>
+            <li class="admin-nav-item active"><a href="{{ url_for('admin.products') }}"><span>Products</span></a></li>
+            <li class="admin-nav-item"><a href="{{ url_for('admin.orders') }}"><span>Orders</span></a></li>
+            <li class="admin-nav-item"><a href="{{ url_for('admin.shipments') }}"><span>Shipments</span></a></li>
+            <li class="admin-nav-item"><a href="{{ url_for('admin.users') }}"><span>Staff &amp; Users</span></a></li>
         </ul>
     </aside>
 
-    <!-- Main Content Form -->
     <main class="admin-main-content">
         <div class="admin-page-header">
             <div>
-                <h1 class="admin-page-title">Add New Mushroom Harvest Lot</h1>
-                <p class="text-muted" style="font-size:var(--text-sm);">Enter crop specifications, initial harvested stock, and cold-chain storage parameters.</p>
+                <h1 class="admin-page-title">Add New Mushroom Product</h1>
+                <p class="text-muted" style="font-size:var(--text-sm);">Set the pack quantity, price, and available stock for this product.</p>
             </div>
             <a href="{{ url_for('admin.products') }}" class="btn btn-secondary btn-sm">&larr; Back to Catalog</a>
         </div>
 
         <div class="admin-form-card">
             <form action="{{ url_for('admin.product_create') }}" method="POST">
-                <!-- 2-Column Responsive Form Grid -->
                 <div class="admin-form-grid-2">
-                    <!-- Col 1: Product Name -->
                     <div class="form-group">
-                        <label class="form-label" for="name">Mushroom Name & Variety *</label>
-                        <input type="text" id="name" name="name" class="form-control" placeholder="e.g. Golden Enoki / Lion's Mane" required>
-                        <span class="form-hint">Official botanical or market trade name.</span>
+                        <label class="form-label" for="name">Product Name *</label>
+                        <input type="text" id="name" name="name" class="form-control" placeholder="e.g. Golden Enoki Mushrooms" maxlength="255" required>
+                        <span class="form-hint">Use the customer-facing product name.</span>
                     </div>
 
-                    <!-- Col 2: Category -->
                     <div class="form-group">
-                        <label class="form-label" for="category_id">Category *</label>
-                        <select id="category_id" name="category_id" class="form-control" required>
-                            {% for category in categories %}<option value="{{ category.id }}">{{ category.name }}</option>{% endfor %}
-                        </select>
+                        <label class="form-label" for="pack_size">Pack Quantity / Weight *</label>
+                        <input type="text" id="pack_size" name="pack_size" class="form-control" placeholder="100g" maxlength="50" required>
+                        <span class="form-hint">Examples: 100g, 250g, 1kg.</span>
                     </div>
 
-                    <!-- Col 1: Base Price (₹) -->
                     <div class="form-group">
-                        <label class="form-label" for="price">Base Unit Price (₹ / 200g) *</label>
-                        <input type="number" id="price" name="price" class="form-control" step="1" min="10" placeholder="150" required>
-                        <span class="form-hint">Price in Indian Rupees (₹) for standard 200g punnet.</span>
+                        <label class="form-label" for="price">Price (₹) *</label>
+                        <input type="number" id="price" name="price" class="form-control" step="0.01" min="0.01" placeholder="150" required>
+                        <span class="form-hint">Price for one listed pack quantity.</span>
                     </div>
 
-                    <!-- Col 2: Stock -->
                     <div class="form-group">
-                        <label class="form-label" for="stock">Harvested Stock (Number of 200g Packs) *</label>
+                        <label class="form-label" for="stock">Stock (Packs) *</label>
                         <input type="number" id="stock" name="stock" class="form-control" min="0" placeholder="50" required>
-                        <span class="form-hint">Current morning cut available in packing bay.</span>
+                        <span class="form-hint">Number of packs currently available.</span>
                     </div>
 
-                    <!-- Optional: Product thumbnail URL -->
                     <div class="form-group admin-form-col-full">
                         <label class="form-label" for="thumbnail_url">Thumbnail Image URL (Optional)</label>
                         <input type="url" id="thumbnail_url" name="thumbnail_url" class="form-control" maxlength="2048" placeholder="https://example.com/mushrooms.jpg">
-                        <span class="form-hint">Use a publicly accessible HTTP or HTTPS image URL. Leave blank to use the default placeholder.</span>
-                    </div>
-
-                    <!-- Col 1: Fruiting Room -->
-                    <div class="form-group">
-                        <label class="form-label" for="fruiting_room">Fruiting Chamber / Lot Code</label>
-                        <input type="text" id="fruiting_room" name="fruiting_room" class="form-control" placeholder="Chamber #4 - Batch 11-A">
-                    </div>
-
-                    <!-- Col 2: Shelf Life -->
-                    <div class="form-group">
-                        <label class="form-label" for="shelf_life">Optimal Shelf Life</label>
-                        <input type="text" id="shelf_life" name="shelf_life" class="form-control" value="Best within 4 days, refrigerate at 2°C - 5°C">
-                    </div>
-
-                    <!-- Full Width: Description -->
-                    <div class="form-group admin-form-col-full">
-                        <label class="form-label" for="description">Culinary Description & Tasting Notes</label>
-                        <textarea id="description" name="description" class="form-control" rows="3" placeholder="Describe the aroma, texture (silky, meaty, crisp), and chef pairings..."></textarea>
-                    </div>
-
-                    <!-- Full Width: Storage & Handling -->
-                    <div class="form-group admin-form-col-full">
-                        <label class="form-label" for="storage_notes">Cold-Chain Storage & Packaging Instructions</label>
-                        <input type="text" id="storage_notes" name="storage_notes" class="form-control" value="Breathable paper punnet with dry moisture absorbent pad and food-grade ice pack.">
+                        <span class="form-hint">Use a publicly accessible HTTP or HTTPS image URL.</span>
                     </div>
                 </div>
 
-                <!-- Primary Action at Bottom Right -->
                 <div class="admin-form-actions-bottom-right">
                     <a href="{{ url_for('admin.products') }}" class="btn btn-secondary">Cancel</a>
                     <button type="submit" class="btn btn-primary">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-                        <span>Save & Publish Harvest</span>
+                        <span>Save &amp; Publish Product</span>
                     </button>
                 </div>
             </form>

@@ -84,8 +84,8 @@
                 <tbody>
                     {% if orders is defined %}
                     {% for order in orders %}
-                    <tr><td>#{{ order.id }}</td><td>{{ order.user.email }}</td><td>—</td>
-                        <td>{% for item in order.items %}{{ item.product.name }} × {{ item.quantity }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
+                    <tr><td>#{{ order.id }}</td><td>{{ order.user.mobile or 'Not verified' }}</td><td>—</td>
+                        <td>{% for item in order.items %}{{ item.product.name }} ({{ item.product.pack_size }}) × {{ item.quantity }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
                         <td>—</td><td>{{ order.status|title }}</td>
                         <td class="text-right">₹{{ '%.2f'|format(order.total) }}</td>
                         <td class="text-right">{% if order.shipment %}{{ order.shipment.status|replace('_', ' ')|title }}{% else %}—{% endif %}</td>

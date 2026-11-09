@@ -1,4 +1,4 @@
-"""Notification service managing outgoing email and SMS delivery message queues."""
+"""Notification service managing outgoing SMS delivery message queues."""
 import copy
 import hashlib
 import json
@@ -7,6 +7,7 @@ import threading
 import time
 from typing import Any
 from flask import current_app, has_app_context
+from services.mobile_service import normalize_mobile
 
 _notifications: dict[str, dict[str, Any]] = {}
 _idempotency_keys: set[str] = set()
@@ -17,18 +18,20 @@ def queue_notification(
     recipient: str, channel: str, subject: str, message: str,
     context: dict[str, Any] | None = None, idempotency_key: str | None = None,
 ) -> None:
-    """Enqueue a customer notification (email or SMS) for asynchronous delivery.
+    """Enqueue a customer SMS notification for asynchronous delivery.
 
-    :param recipient: Target email address or phone number.
-    :param channel: Communication medium ('email' or 'sms').
+    :param recipient: Target E.164 mobile number.
+    :param channel: Communication medium ('sms').
     :param subject: Notification subject or title.
     :param message: Message body or rendered template content.
     :param context: Optional metadata or template payload.
     """
-    if not isinstance(recipient, str) or not recipient.strip() or len(recipient) > 255:
-        raise ValueError("A valid notification recipient is required.")
-    if channel not in {"email", "sms"}:
-        raise ValueError("Notification channel must be email or sms.")
+    try:
+        recipient = normalize_mobile(recipient)
+    except ValueError as error:
+        raise ValueError("A valid notification recipient is required.") from error
+    if channel != "sms":
+        raise ValueError("Notification channel must be sms.")
     if not isinstance(subject, str) or not subject.strip() or len(subject) > 255:
         raise ValueError("A valid notification subject is required.")
     if not isinstance(message, str) or not message.strip() or len(message) > 10000:

@@ -4,6 +4,7 @@ from services import tracking_service
 from services.tracking_service import DELIVERY_STATUS_TRANSITIONS
 from extensions import db
 from models import Order, Shipment, User
+from tests.conftest import authenticate
 
 
 def test_delivery_status_transitions_constants():
@@ -20,7 +21,7 @@ def test_tracking_links_open_the_combined_orders_page(client):
     from flask import current_app
     app = current_app._get_current_object()
     with app.app_context():
-        user = User(email="tracking-page@example.com")
+        user = User(mobile="+919876543230", mobile_verified=True)
         user.set_password("test-password")
         db.session.add(user)
         db.session.flush()
@@ -28,10 +29,9 @@ def test_tracking_links_open_the_combined_orders_page(client):
         db.session.add(order)
         db.session.commit()
         tracking_service.create_shipment(order.id, "Test Carrier", "TRK-TEST12345")
+        user_id = user.id
 
-    client.post("/auth/login", data={
-        "email": "tracking-page@example.com", "password": "test-password"
-    })
+    authenticate(client, user_id)
     response = client.get("/track/TRK-TEST12345")
     assert response.status_code == 302
     assert response.headers["Location"].endswith("/track")
@@ -52,9 +52,9 @@ def test_legacy_navigation_tracking_number_opens_my_orders(client):
 
 def test_my_tracking_lists_only_the_signed_in_users_orders(client, app):
     with app.app_context():
-        customer = User(email="my-tracking@example.com")
+        customer = User(mobile="+919876543231", mobile_verified=True)
         customer.set_password("test-password")
-        other_customer = User(email="other-tracking@example.com")
+        other_customer = User(mobile="+919876543232", mobile_verified=True)
         other_customer.set_password("test-password")
         db.session.add_all([customer, other_customer])
         db.session.flush()
@@ -66,10 +66,9 @@ def test_my_tracking_lists_only_the_signed_in_users_orders(client, app):
         tracking_service.create_shipment(other_order.id, "Farm Delivery", "DF-OTHER-ORDER")
         own_order_id = own_order.id
         other_order_id = other_order.id
+        customer_id = customer.id
 
-    client.post("/auth/login", data={
-        "email": "my-tracking@example.com", "password": "test-password"
-    })
+    authenticate(client, customer_id)
     response = client.get("/track")
     assert response.status_code == 200
     assert f"Order #{own_order_id}".encode() in response.data
@@ -80,7 +79,7 @@ def test_my_tracking_lists_only_the_signed_in_users_orders(client, app):
 
 def test_shipment_milestones_advance_from_harvested_to_delivered(app):
     with app.app_context():
-        user = User(email="milestone-tracking@example.com")
+        user = User(mobile="+919876543233", mobile_verified=True)
         user.set_password("test-password")
         db.session.add(user)
         db.session.flush()
@@ -109,7 +108,7 @@ def test_shipment_milestones_advance_from_harvested_to_delivered(app):
 
 def test_admin_can_update_customer_visible_milestones(client, app):
     with app.app_context():
-        user = User(email="shipment-admin@example.com", is_admin=True)
+        user = User(mobile="+919876543234", mobile_verified=True, is_admin=True)
         user.set_password("test-password")
         db.session.add(user)
         db.session.flush()
@@ -118,10 +117,9 @@ def test_admin_can_update_customer_visible_milestones(client, app):
         db.session.commit()
         shipment = tracking_service.create_shipment(order.id, "Farm Delivery", "TRK-ADMIN-MILESTONES")
         shipment_id = shipment.id
+        user_id = user.id
 
-    client.post("/auth/login", data={
-        "email": "shipment-admin@example.com", "password": "test-password"
-    })
+    authenticate(client, user_id)
     for status in ("harvested", "dispatched", "delivered"):
         response = client.post(f"/admin/shipments/{shipment_id}/status", data={"status": status})
         assert response.status_code == 302
@@ -136,7 +134,7 @@ def test_admin_can_update_customer_visible_milestones(client, app):
 
 def test_tracking_events_validate_transitions_and_persist(app):
     with app.app_context():
-        user = User(email="tracking-events@example.com")
+        user = User(mobile="+919876543235", mobile_verified=True)
         user.set_password("test-password")
         db.session.add(user)
         db.session.flush()
@@ -160,7 +158,7 @@ def test_tracking_events_validate_transitions_and_persist(app):
 
 def test_shipment_rejects_duplicate_tracking_and_order(app):
     with app.app_context():
-        user = User(email="tracking-duplicate@example.com")
+        user = User(mobile="+919876543236", mobile_verified=True)
         user.set_password("test-password")
         db.session.add(user)
         db.session.flush()

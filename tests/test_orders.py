@@ -16,7 +16,7 @@ def test_order_status_transitions_constants():
 
 def test_checkout_creates_order_and_decrements_inventory(app):
     with app.app_context():
-        user = User(email="buyer@example.com")
+        user = User(mobile="+919876543227", mobile_verified=True)
         user.set_password("test-password")
         product = Product(name="Order Mushroom", price=25, stock=5)
         db.session.add_all([user, product])
@@ -33,7 +33,7 @@ def test_checkout_creates_order_and_decrements_inventory(app):
 
 def test_checkout_insufficient_stock_rolls_back_everything(app):
     with app.app_context():
-        user = User(email="rollback@example.com")
+        user = User(mobile="+919876543228", mobile_verified=True)
         user.set_password("test-password")
         available = Product(name="Available Mushroom", price=10, stock=5)
         scarce = Product(name="Scarce Mushroom", price=20, stock=1)
@@ -51,7 +51,7 @@ def test_checkout_insufficient_stock_rolls_back_everything(app):
 
 def test_order_status_transition_validation_and_retrieval(app):
     with app.app_context():
-        user = User(email="status@example.com")
+        user = User(mobile="+919876543229", mobile_verified=True)
         user.set_password("test-password")
         db.session.add(user)
         db.session.flush()

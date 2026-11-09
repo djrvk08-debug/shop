@@ -90,35 +90,115 @@ def create_app(config_class=None) -> Flask:
         """Create database tables and seed the initial catalog."""
         db.create_all()
         with db.engine.begin() as connection:
+            user_inspector = inspect(connection)
+            user_details = user_inspector.get_columns("users")
+            user_columns = {column["name"] for column in user_details}
+            if "mobile" not in user_columns:
+                connection.execute(text("ALTER TABLE users ADD COLUMN mobile VARCHAR(20)"))
+            if "mobile_verified" not in user_columns:
+                connection.execute(text(
+                    "ALTER TABLE users ADD COLUMN mobile_verified BOOLEAN NOT NULL DEFAULT 0"
+                ))
+            # SQLite cannot change a NOT NULL legacy email column in place. Keep
+            # the column for support data, but rebuild the table so new mobile-only
+            # registrations can leave it empty.
+            email_column = next((column for column in user_details if column["name"] == "email"), None)
+            if email_column and not email_column["nullable"]:
+                connection.exec_driver_sql("PRAGMA foreign_keys=OFF")
+                connection.execute(text("DROP INDEX IF EXISTS ux_users_mobile"))
+                connection.execute(text(
+                    "CREATE TABLE users_new ("
+                    "id INTEGER NOT NULL PRIMARY KEY, "
+                    "email VARCHAR(255), "
+                    "mobile VARCHAR(20), "
+                    "mobile_verified BOOLEAN NOT NULL DEFAULT 0, "
+                    "password_hash VARCHAR(255) NOT NULL, "
+                    "is_admin BOOLEAN NOT NULL DEFAULT 0"
+                    ")"
+                ))
+                connection.execute(text(
+                    "INSERT INTO users_new "
+                    "(id, email, mobile, mobile_verified, password_hash, is_admin) "
+                    "SELECT id, email, mobile, mobile_verified, password_hash, is_admin FROM users"
+                ))
+                connection.execute(text("DROP TABLE users"))
+                connection.execute(text("ALTER TABLE users_new RENAME TO users"))
+                connection.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS ix_users_email ON users (email)"))
+                connection.exec_driver_sql("PRAGMA foreign_keys=ON")
+            connection.execute(text(
+                "CREATE UNIQUE INDEX IF NOT EXISTS ux_users_mobile ON users (mobile)"
+            ))
             product_columns = {column["name"] for column in inspect(connection).get_columns("products")}
+            if "pack_size" not in product_columns:
+                connection.execute(text(
+                    "ALTER TABLE products ADD COLUMN pack_size VARCHAR(50) NOT NULL DEFAULT '200g'"
+                ))
             if "thumbnail_url" not in product_columns:
                 connection.execute(text(
                     "ALTER TABLE products ADD COLUMN thumbnail_url VARCHAR(2048)"
                 ))
-            connection.execute(text("CREATE INDEX IF NOT EXISTS ix_categories_name ON categories (name)"))
-            connection.execute(text("CREATE INDEX IF NOT EXISTS ix_products_category_id ON products (category_id)"))
+            if "category_id" in product_columns:
+                # SQLite cannot drop a column that is still present in the table's
+                # foreign-key definition, so rebuild the legacy products table.
+                connection.exec_driver_sql("PRAGMA foreign_keys=OFF")
+                connection.execute(text(
+                    "CREATE TABLE products_new ("
+                    "id INTEGER NOT NULL PRIMARY KEY, "
+                    "name VARCHAR(255) NOT NULL, "
+                    "price NUMERIC(10, 2) NOT NULL, "
+                    "pack_size VARCHAR(50) NOT NULL DEFAULT '200g', "
+                    "stock INTEGER NOT NULL, thumbnail_url VARCHAR(2048)"
+                    ")"
+                ))
+                connection.execute(text(
+                    "INSERT INTO products_new (id, name, price, pack_size, stock, thumbnail_url) "
+                    "SELECT id, name, price, COALESCE(pack_size, '200g'), stock, thumbnail_url FROM products"
+                ))
+                connection.execute(text("DROP TABLE products"))
+                connection.execute(text("ALTER TABLE products_new RENAME TO products"))
+                connection.execute(text("CREATE INDEX IF NOT EXISTS ix_products_name ON products (name)"))
+            connection.execute(text("DROP TABLE IF EXISTS categories"))
         from services.search_service import seed_sample_data
         seed_sample_data()
         click.echo("Initialized database tables and sample catalog.")
 
     @app.cli.command("create-admin")
-    @click.option("--email", default=None, help="Admin email address.")
+    @click.option("--mobile", default=None, help="Admin mobile number in +91XXXXXXXXXX format.")
     @click.option("--password", default=None, help="Admin password.")
-    def create_admin_command(email, password):
+    def create_admin_command(mobile, password):
         """Create admin user if it does not already exist."""
-        admin_email = email or os.environ.get("ADMIN_EMAIL") or click.prompt("Admin email")
+        from services.mobile_service import normalize_mobile
+        admin_mobile = normalize_mobile(mobile or os.environ.get("ADMIN_MOBILE") or click.prompt("Admin mobile number"))
         admin_pass = password or os.environ.get("ADMIN_PASSWORD") or click.prompt(
             "Admin password", hide_input=True, confirmation_prompt=True
         )
-        existing_user = User.query.filter_by(email=admin_email).first()
+        existing_user = User.query.filter_by(mobile=admin_mobile).first()
         if existing_user:
-            click.echo(f"Admin user '{admin_email}' already exists.")
+            click.echo(f"Admin user '{admin_mobile}' already exists.")
         else:
-            admin_user = User(email=admin_email, is_admin=True)
+            admin_user = User(mobile=admin_mobile, mobile_verified=True, is_admin=True)
             admin_user.set_password(admin_pass)
             db.session.add(admin_user)
             db.session.commit()
-            click.echo(f"Created admin user: {admin_email}")
+            click.echo(f"Created admin user: {admin_mobile}")
+
+    @app.cli.command("set-user-mobile")
+    @click.option("--user-id", type=int, required=True, help="Existing user ID.")
+    @click.option("--mobile", required=True, help="New mobile number in +91XXXXXXXXXX format.")
+    def set_user_mobile_command(user_id, mobile):
+        """Attach and verify a mobile number for a legacy user without one."""
+        from services.mobile_service import normalize_mobile
+        user = db.session.get(User, user_id)
+        if user is None:
+            raise click.ClickException("User not found.")
+        normalized = normalize_mobile(mobile)
+        duplicate = User.query.filter(User.mobile == normalized, User.id != user.id).first()
+        if duplicate:
+            raise click.ClickException("That mobile number is already in use.")
+        user.mobile = normalized
+        user.mobile_verified = True
+        db.session.commit()
+        click.echo(f"Updated user {user.id} with mobile {normalized}.")
 
     # TODO: Register custom error handlers (400, 403, 404, 500)
     # TODO: Register template context processors (e.g. cart item count, current year)

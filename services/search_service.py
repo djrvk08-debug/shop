@@ -4,7 +4,7 @@ from decimal import Decimal
 from urllib.parse import urlsplit
 
 from extensions import db
-from models import Category, Product
+from models import Product
 
 
 class AutocompleteTrieNode:
@@ -27,8 +27,7 @@ def build_inverted_index() -> dict[str, set[int]]:
     """
     index: dict[str, set[int]] = {}
     for product in Product.query.all():
-        text = product.name + (" " + product.category.name if product.category else "")
-        for token in set(_tokens(text)):
+        for token in set(_tokens(product.name + " " + product.pack_size)):
             index.setdefault(token, set()).add(product.id)
     return index
 
@@ -51,13 +50,12 @@ def search_catalog(query: str) -> list[int]:
 
 
 def build_trie() -> AutocompleteTrieNode:
-    """Build a prefix Trie populated with catalog product and category titles.
+    """Build a prefix Trie populated with catalog product titles.
 
     :return: Root AutocompleteTrieNode of the constructed trie.
     """
     root = AutocompleteTrieNode()
     titles = [product.name for product in Product.query.order_by(Product.name).all()]
-    titles.extend(category.name for category in Category.query.order_by(Category.name).all())
     for title in titles:
         for token in set(_tokens(title)):
             node = root
@@ -86,19 +84,12 @@ def autocomplete_query(prefix: str, limit: int = 5) -> list[str]:
     return sorted(node.words, key=str.casefold)[:limit]
 
 
-def get_categories() -> list[Category]:
-    return Category.query.order_by(Category.name).all()
-
-
 def get_product(product_id: int) -> Product | None:
     return db.session.get(Product, product_id)
 
 
-def list_products(page: int = 1, per_page: int = 12, category_id: int | None = None,
-                  sort: str = "name"):
+def list_products(page: int = 1, per_page: int = 12, sort: str = "name"):
     query = Product.query
-    if category_id is not None:
-        query = query.filter_by(category_id=category_id)
     sort_columns = {
         "name": Product.name.asc(),
         "price": Product.price.asc(),
@@ -119,34 +110,23 @@ def products_by_ids(product_ids: list[int]) -> list[Product]:
 
 def seed_sample_data() -> None:
     """Insert the demo catalog once, preserving records already managed by staff."""
-    category_names = ["Fresh Mushrooms", "Exotic Mushrooms", "Dried Mushrooms", "Spices & Powders"]
-    categories = {}
-    for name in category_names:
-        category = Category.query.filter_by(name=name).first()
-        if category is None:
-            category = Category(name=name)
-            db.session.add(category)
-            db.session.flush()
-        categories[name] = category
-
     samples = [
-        ("Pearl Oyster Mushrooms", 120, 42, "Fresh Mushrooms"),
-        ("White Button Mushrooms", 75, 80, "Fresh Mushrooms"),
-        ("Fresh Shiitake Mushrooms", 210, 6, "Exotic Mushrooms"),
-        ("Royal King Oyster", 190, 18, "Exotic Mushrooms"),
-        ("Pristine Milky Mushrooms", 95, 28, "Fresh Mushrooms"),
-        ("Sun-Dried Shiitake & Porcini Mix", 299, 50, "Dried Mushrooms"),
-        ("Wild Mushroom Umami Powder", 240, 65, "Spices & Powders"),
-        ("Flamingo Pink Oyster", 180, 0, "Exotic Mushrooms"),
+        ("Pearl Oyster Mushrooms", 120, "200g", 42),
+        ("White Button Mushrooms", 75, "200g", 80),
+        ("Fresh Shiitake Mushrooms", 210, "200g", 6),
+        ("Royal King Oyster", 190, "200g", 18),
+        ("Pristine Milky Mushrooms", 95, "200g", 28),
+        ("Sun-Dried Shiitake & Porcini Mix", 299, "100g", 50),
+        ("Wild Mushroom Umami Powder", 240, "100g", 65),
+        ("Flamingo Pink Oyster", 180, "200g", 0),
     ]
-    for name, price, stock, category_name in samples:
+    for name, price, pack_size, stock in samples:
         if Product.query.filter_by(name=name).first() is None:
-            db.session.add(Product(name=name, price=Decimal(price), stock=stock,
-                                   category=categories[category_name]))
+            db.session.add(Product(name=name, price=Decimal(price), pack_size=pack_size, stock=stock))
     db.session.commit()
 
 
-def create_product(name: str, price: Decimal, stock: int, category_id: int,
+def create_product(name: str, price: Decimal, pack_size: str, stock: int,
                    thumbnail_url: str | None = None) -> Product:
     name = name.strip() if isinstance(name, str) else ""
     if not name or len(name) > 255:
@@ -154,9 +134,11 @@ def create_product(name: str, price: Decimal, stock: int, category_id: int,
     try:
         price = Decimal(str(price))
         stock = int(stock)
-        category_id = int(category_id)
     except (ValueError, TypeError):
-        raise ValueError("Price, stock, and category must be valid values.")
+        raise ValueError("Price, pack size, and stock must be valid values.")
+    pack_size = pack_size.strip() if isinstance(pack_size, str) else ""
+    if not pack_size or len(pack_size) > 50:
+        raise ValueError("Pack size is required (for example, 100g).")
     if not price.is_finite() or price <= 0 or stock < 0:
         raise ValueError("Price must be positive and stock cannot be negative.")
     thumbnail_url = thumbnail_url.strip() if isinstance(thumbnail_url, str) else ""
@@ -170,10 +152,7 @@ def create_product(name: str, price: Decimal, stock: int, category_id: int,
             raise ValueError("Thumbnail must be a valid HTTP or HTTPS URL.")
     else:
         thumbnail_url = None
-    category = db.session.get(Category, category_id)
-    if category is None:
-        raise ValueError("Select a valid product category.")
-    product = Product(name=name, price=price, stock=stock, category=category,
+    product = Product(name=name, price=price, pack_size=pack_size, stock=stock,
                       thumbnail_url=thumbnail_url)
     db.session.add(product)
     db.session.commit()

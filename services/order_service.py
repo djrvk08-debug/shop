@@ -86,12 +86,13 @@ def change_status(order_id: int, new_status: str) -> Any:
     order.status = new_status
     db.session.commit()
     from services.notify_service import queue_notification
-    queue_notification(
-        recipient=order.user.email, channel="email", subject=f"Order {order.id} update",
-        message=f"Your order status is now {new_status}.",
-        context={"order_id": order.id, "status": new_status},
-        idempotency_key=f"order:{order.id}:status:{new_status}",
-    )
+    if order.user.mobile:
+        queue_notification(
+            recipient=order.user.mobile, channel="sms", subject=f"Order {order.id} update",
+            message=f"Your order status is now {new_status}.",
+            context={"order_id": order.id, "status": new_status},
+            idempotency_key=f"order:{order.id}:status:{new_status}",
+        )
     return order
 
 

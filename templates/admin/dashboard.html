@@ -11,8 +11,8 @@
 <main class="admin-main-content">
     <div class="admin-page-header"><h1 class="admin-page-title">Staff & Users</h1></div>
     <div class="table-responsive"><table class="table">
-        <thead><tr><th>Email</th><th>Role</th><th>Account ID</th></tr></thead>
-        <tbody>{% for user in users %}<tr><td>{{ user.email }}</td><td>{{ 'Admin' if user.is_admin else 'Customer' }}</td><td>{{ user.id }}</td></tr>
+        <thead><tr><th>Mobile</th><th>Role</th><th>Account ID</th></tr></thead>
+        <tbody>{% for user in users %}<tr><td>{{ user.mobile or 'Not verified' }}</td><td>{{ 'Admin' if user.is_admin else 'Customer' }}</td><td>{{ user.id }}</td></tr>
         {% else %}<tr><td colspan="3">No users found.</td></tr>{% endfor %}</tbody>
     </table></div>
 </main>
@@ -177,8 +177,8 @@
                         </tr>
                     </thead>
                     <tbody>{% for order in recent_orders %}
-                        <tr><td>#{{ order.id }}</td><td>{{ order.user.email }}</td>
-                            <td>{% for item in order.items %}{{ item.product.name }} × {{ item.quantity }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
+                        <tr><td>#{{ order.id }}</td><td>{{ order.user.mobile or 'Not verified' }}</td>
+                            <td>{% for item in order.items %}{{ item.product.name }} ({{ item.product.pack_size }}) × {{ item.quantity }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
                             <td>—</td><td>{{ order.status|title }}</td>
                             <td class="text-right">₹{{ '%.2f'|format(order.total) }}</td>
                             <td class="text-right">{% if order.shipment %}{{ order.shipment.status|replace('_', ' ')|title }}{% else %}—{% endif %}</td>

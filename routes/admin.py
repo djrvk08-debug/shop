@@ -40,7 +40,7 @@ def dashboard():
 @admin_bp.route("/products")
 def products():
     """Display product catalog management inventory view."""
-    products = Product.query.options(joinedload(Product.category)).order_by(Product.name).all()
+    products = Product.query.order_by(Product.name).all()
     return render_template("admin/products.html", products=products)
 
 
@@ -51,7 +51,7 @@ def product_create():
         try:
             product = search_service.create_product(
                 request.form.get("name", ""), request.form.get("price", ""),
-                request.form.get("stock", ""), request.form.get("category_id", ""),
+                request.form.get("pack_size", ""), request.form.get("stock", ""),
                 request.form.get("thumbnail_url", ""),
             )
         except ValueError as error:
@@ -60,7 +60,7 @@ def product_create():
             flash(f"{product.name} created successfully.", "success")
             return redirect(url_for("admin.products"))
 
-    return render_template("admin/product_form.html", categories=search_service.get_categories())
+    return render_template("admin/product_form.html")
 
 
 @admin_bp.route("/orders")
@@ -106,5 +106,5 @@ def update_shipment_status(shipment_id):
 @admin_bp.route("/users")
 def users():
     """Manage customer and staff administrator accounts."""
-    users = User.query.order_by(User.email).all()
+    users = User.query.order_by(User.mobile).all()
     return render_template("admin/dashboard.html", users=users)

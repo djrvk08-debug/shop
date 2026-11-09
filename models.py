@@ -18,10 +18,15 @@ class User(UserMixin, db.Model):
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(255), unique=True, nullable=False, index=True)
+    # Kept optional for legacy/support data; mobile is the login identifier.
+    email = db.Column(db.String(255), unique=True, nullable=True, index=True)
+    mobile = db.Column(db.String(20), unique=True, nullable=True, index=True)
+    mobile_verified = db.Column(db.Boolean, default=False, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     is_admin = db.Column(db.Boolean, default=False, nullable=False)
     orders = db.relationship("Order", backref="user", lazy=True)
+    otp_challenges = db.relationship("OTPChallenge", backref="user", lazy=True,
+                                     cascade="all, delete-orphan")
 
     def set_password(self, password: str) -> None:
         """Hash and set user password."""
@@ -34,17 +39,21 @@ class User(UserMixin, db.Model):
     # TODO: Add relationship to Order (orders = db.relationship('Order', backref='user', lazy='dynamic'))
 
 
-class Category(db.Model):
-    """Product catalog hierarchical category."""
+class OTPChallenge(db.Model):
+    """Hashed, single-use OTP challenge for mobile verification."""
 
-    __tablename__ = "categories"
+    __tablename__ = "otp_challenges"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False, index=True)
-    parent_id = db.Column(db.Integer, db.ForeignKey("categories.id"), nullable=True)
-
-    # TODO: Add self-referential parent/subcategories relationship
-    # TODO: Add products relationship (products = db.relationship('Product', backref='category', lazy='dynamic'))
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    mobile = db.Column(db.String(20), nullable=False, index=True)
+    purpose = db.Column(db.String(20), nullable=False, index=True)
+    code_hash = db.Column(db.String(64), nullable=False)
+    expires_at = db.Column(db.DateTime(timezone=True), nullable=False, index=True)
+    attempt_count = db.Column(db.Integer, default=0, nullable=False)
+    used = db.Column(db.Boolean, default=False, nullable=False, index=True)
+    request_ip = db.Column(db.String(45), nullable=False, index=True)
+    created_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
 
 
 class Product(db.Model):
@@ -55,10 +64,9 @@ class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False, index=True)
     price = db.Column(db.Numeric(10, 2), nullable=False)
+    pack_size = db.Column(db.String(50), nullable=False, default="200g")
     stock = db.Column(db.Integer, default=0, nullable=False)
     thumbnail_url = db.Column(db.String(2048), nullable=True)
-    category_id = db.Column(db.Integer, db.ForeignKey("categories.id"), nullable=True, index=True)
-    category = db.relationship("Category", backref=db.backref("products", lazy=True))
 
     # TODO: Add description, SKU, and active status fields
     # TODO: Add relationship to OrderItem

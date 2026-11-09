@@ -11,11 +11,22 @@ class Config:
 
     SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-production")
     CARRIER_WEBHOOK_TOKEN = os.environ.get("CARRIER_WEBHOOK_TOKEN")
+    SMS_PROVIDER = os.environ.get("SMS_PROVIDER", "console")
+    OTP_SECRET = os.environ.get("OTP_SECRET", SECRET_KEY)
+    OTP_EXPIRY_SECONDS = 300
+    OTP_RESEND_COOLDOWN_SECONDS = 45
+    OTP_HOURLY_LIMIT = 5
+    OTP_IP_HOURLY_LIMIT = 20
+    OTP_VERIFY_HOURLY_LIMIT = 20
+    OTP_VERIFY_IP_HOURLY_LIMIT = 50
+    TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID")
+    TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN")
+    TWILIO_FROM_NUMBER = os.environ.get("TWILIO_FROM_NUMBER")
+    SMS_TEMPLATE_ID = os.environ.get("SMS_TEMPLATE_ID")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     DEBUG = False
     TESTING = False
 
-    # TODO: Add mail/SMS configuration (SMTP_SERVER, NOTIFICATION_WEBHOOK_URL)
     # TODO: Add session cookie security flags (SESSION_COOKIE_SECURE, REMEMBER_COOKIE_HTTPONLY)
 
 

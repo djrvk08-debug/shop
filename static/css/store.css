@@ -172,15 +172,6 @@
   flex: 1;
 }
 
-.product-category-tag {
-  font-size: var(--text-sm);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-weight: 700;
-  color: var(--color-accent);
-  margin-bottom: var(--space-1);
-}
-
 .product-name-link {
   color: var(--color-text);
   text-decoration: none;

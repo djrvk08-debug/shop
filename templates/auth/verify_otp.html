@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% from "components/auth.html" import otp_input %}
+{% block title %}Verify Mobile | Dharti Fresh{% endblock %}
+{% block content %}
+<div class="auth-wrapper"><div class="auth-card"><div class="auth-header"><div class="auth-logo-badge">✓</div><h1 class="auth-title">Verify your mobile</h1><p class="auth-subtitle">Enter the 6-digit code sent to {{ mobile }}. It expires in 5 minutes.</p></div><form action="{{ url_for('auth.verify_otp_route') }}" method="POST">{{ otp_input() }}<button type="submit" class="btn btn-primary btn-block">Verify code</button></form><form action="{{ url_for('auth.resend_otp') }}" method="POST" class="auth-footer"><button type="submit" class="btn btn-secondary" data-resend disabled>Resend code <span data-countdown>45</span>s</button></form></div></div>
+{% endblock %}

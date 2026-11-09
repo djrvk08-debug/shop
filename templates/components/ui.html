@@ -1,73 +1,7 @@
-{# Shared small UI macros. #}
-{% macro button(label, href=None, variant='primary', size=None, block=False, type='submit', disabled=False) -%}
-    {# button(label, href=None, variant='primary', size=None, block=False, type='submit', disabled=False) #}
-    {% set classes = 'btn btn-' ~ variant ~ (' btn-' ~ size if size else '') ~ (' btn-block' if block else '') %}
-    {% if href %}<a href="{{ href }}" class="{{ classes }}{% if disabled %} disabled{% endif %}"{% if disabled %} aria-disabled="true"{% endif %}>{{ label }}</a>
-    {% else %}<button type="{{ type }}" class="{{ classes }}{% if disabled %} disabled{% endif %}"{% if disabled %} disabled{% endif %}>{{ label }}</button>{% endif %}
-{%- endmacro %}
-
-{% macro status_badge(label, variant='cold') -%}
-    {# status_badge(label, variant='cold') #}
-    <span class="badge badge-{{ variant }}">{{ label }}</span>
-{%- endmacro %}
-
-{% macro empty_state(message, cta_url=None, cta_label=None) -%}
-    {# empty_state(message, cta_url=None, cta_label=None) #}
-    <div class="empty-state"><p>{{ message }}</p>{% if cta_url and cta_label %}<a href="{{ cta_url }}" class="btn btn-secondary btn-sm">{{ cta_label }}</a>{% endif %}</div>
-{%- endmacro %}
-
+{% macro status_badge(label, variant='cold') -%}<span class="badge badge-{{ variant }}">{{ label }}</span>{%- endmacro %}
+{% macro empty_state(message, cta_url=None, cta_label=None) -%}<div class="empty-state"><p>{{ message }}</p>{% if cta_url and cta_label %}<a href="{{ cta_url }}" class="btn btn-secondary btn-sm">{{ cta_label }}</a>{% endif %}</div>{%- endmacro %}
 {% macro product_card(product) -%}
-    {# product_card(product) #}
-    <article class="product-card">
-        <div class="product-image-wrapper">
-            {% if product.thumbnail_url %}<img src="{{ product.thumbnail_url }}" alt="{{ product.name }}" loading="lazy" decoding="async">
-            {% else %}<div class="product-image-placeholder"><span>{{ product.name }}</span></div>{% endif %}
-        </div>
-        <div class="product-info-block">
-            <span class="product-category-tag">{{ product.category.name if product.category else 'Mushrooms' }}</span>
-            <h3 class="product-title"><a href="{{ url_for('store.product_detail', product_id=product.id) }}" class="product-name-link">{{ product.name }}</a></h3>
-            <div class="product-price-row"><span class="price-currency">₹</span><span class="price-amount">{{ '%.2f'|format(product.price) }}</span></div>
-            <p class="text-muted">{{ product.stock }} in stock</p>
-            {% if product.stock > 0 %}<form action="{{ url_for('cart.add_to_cart') }}" method="POST">
-                <input type="hidden" name="product_id" value="{{ product.id }}"><input type="hidden" name="quantity" value="1">
-                <button type="submit" class="btn btn-primary btn-block">Add to Cart</button>
-            </form>{% else %}{{ status_badge('Out of stock', 'out-of-stock') }}{% endif %}
-        </div>
-    </article>
+<article class="product-card"><div class="product-image-wrapper">{% if product.thumbnail_url %}<img src="{{ product.thumbnail_url }}" alt="{{ product.name }}" loading="lazy">{% else %}<div class="product-image-placeholder"><span>{{ product.name }}</span></div>{% endif %}</div><div class="product-info-block"><h3 class="product-title"><a href="{{ url_for('store.product_detail', product_id=product.id) }}" class="product-name-link">{{ product.name }}</a></h3><div class="product-price-row"><span class="price-currency">₹</span><span class="price-amount">{{ '%.2f'|format(product.price) }}</span><span class="price-unit">/ {{ product.pack_size }}</span></div><p class="text-muted">{{ product.stock }} packs in stock</p>{% if product.stock > 0 %}<form action="{{ url_for('cart.add_to_cart') }}" method="POST"><input type="hidden" name="product_id" value="{{ product.id }}"><input type="hidden" name="quantity" value="1"><button type="submit" class="btn btn-primary btn-block">Add to Cart</button></form>{% else %}{{ status_badge('Out of stock', 'out-of-stock') }}{% endif %}</div></article>
 {%- endmacro %}
-
-{% macro pagination(page_obj, endpoint, endpoint_args={}) -%}
-    {# pagination(page_obj, endpoint, endpoint_args={}) #}
-    {% if page_obj and page_obj.pages > 1 %}<nav aria-label="Product pages">
-        {% for page_number in page_obj.iter_pages() %}{% if page_number %}<a class="btn btn-sm{% if page_number == page_obj.page %} btn-primary{% else %} btn-secondary{% endif %}" href="{{ url_for(endpoint, page=page_number, **endpoint_args) }}">{{ page_number }}</a>{% else %}<span>…</span>{% endif %}{% endfor %}
-    </nav>{% endif %}
-{%- endmacro %}
-
-{% macro cart_item(item) -%}
-    {# cart_item(item) #}
-    <div class="cart-item-row">
-        <div class="cart-item-main-group">
-            <div class="cart-item-thumb" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2 0-5.52-4.48-10-10-10zM10 15v5a2 2 0 0 0 4 0v-5h-4z"/></svg>
-            </div>
-            <div class="cart-item-details">
-                <h3 class="cart-item-title"><a href="{{ url_for('store.product_detail', product_id=item.product_id) }}" class="product-name-link">{{ item.product.name }}</a></h3>
-                <div class="cart-item-weight">₹{{ '%.2f'|format(item.unit_price) }} each</div>
-                <form action="{{ url_for('cart.remove_from_cart') }}" method="POST">
-                    <input type="hidden" name="product_id" value="{{ item.product_id }}">
-                    <button type="submit" class="cart-item-remove-btn">Remove</button>
-                </form>
-            </div>
-        </div>
-        <div class="cart-item-controls">
-            <form action="{{ url_for('cart.update_cart') }}" method="POST" class="qty-stepper">
-                <input type="hidden" name="product_id" value="{{ item.product_id }}">
-                <button type="button" class="qty-btn qty-minus" aria-label="Decrease quantity of {{ item.product.name }}">&minus;</button>
-                <input type="number" class="qty-input" name="quantity" value="{{ item.quantity }}" min="1" max="{{ item.product.stock }}" aria-label="Quantity for {{ item.product.name }}">
-                <button type="button" class="qty-btn qty-plus" aria-label="Increase quantity of {{ item.product.name }}">&plus;</button>
-                <button type="submit" class="btn btn-sm btn-secondary">Update</button>
-            </form>
-            <div class="cart-item-total">₹{{ '%.2f'|format(item.line_total) }}</div>
-        </div>
-    </div>
-{%- endmacro %}
+{% macro pagination(page_obj, endpoint, endpoint_args={}) -%}{% if page_obj and page_obj.pages > 1 %}<nav aria-label="Product pages">{% for page_number in page_obj.iter_pages() %}{% if page_number %}<a class="btn btn-sm{% if page_number == page_obj.page %} btn-primary{% else %} btn-secondary{% endif %}" href="{{ url_for(endpoint, page=page_number, **endpoint_args) }}">{{ page_number }}</a>{% endif %}{% endfor %}</nav>{% endif %}{%- endmacro %}
+{% macro cart_item(item) -%}<div class="cart-item-row"><div class="cart-item-main-group"><div class="cart-item-details"><h3 class="cart-item-title"><a href="{{ url_for('store.product_detail', product_id=item.product_id) }}" class="product-name-link">{{ item.product.name }}</a></h3><div class="cart-item-weight">{{ item.product.pack_size }} · ₹{{ '%.2f'|format(item.unit_price) }} per pack</div><form action="{{ url_for('cart.remove_from_cart') }}" method="POST"><input type="hidden" name="product_id" value="{{ item.product_id }}"><button type="submit" class="cart-item-remove-btn">Remove</button></form></div></div><div class="cart-item-controls"><form action="{{ url_for('cart.update_cart') }}" method="POST" class="qty-stepper"><input type="hidden" name="product_id" value="{{ item.product_id }}"><button type="button" class="qty-btn qty-minus">−</button><input type="number" class="qty-input" name="quantity" value="{{ item.quantity }}" min="1" max="{{ item.product.stock }}"><button type="button" class="qty-btn qty-plus">+</button><button type="submit" class="btn btn-sm btn-secondary">Update</button></form><div class="cart-item-total">₹{{ '%.2f'|format(item.line_total) }}</div></div></div>{%- endmacro %}

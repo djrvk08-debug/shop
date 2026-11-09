@@ -5,7 +5,7 @@ from services import notify_service
 def test_notification_enqueue_is_idempotent_and_requires_sender(app, monkeypatch):
     monkeypatch.setattr(notify_service, "_notifications", {})
     monkeypatch.setattr(notify_service, "_idempotency_keys", set())
-    payload = dict(recipient="customer@example.com", channel="email", subject="Order update",
+    payload = dict(recipient="+919876543240", channel="sms", subject="Order update",
                    message="Order is processing", idempotency_key="order-1-processing")
     notify_service.queue_notification(**payload)
     notify_service.queue_notification(**payload)
@@ -19,7 +19,7 @@ def test_notification_enqueue_is_idempotent_and_requires_sender(app, monkeypatch
 def test_notification_delivery_retries_and_marks_success_once(app, monkeypatch):
     monkeypatch.setattr(notify_service, "_notifications", {})
     monkeypatch.setattr(notify_service, "_idempotency_keys", set())
-    notify_service.queue_notification("customer@example.com", "email", "Receipt", "Order received",
+    notify_service.queue_notification("+919876543240", "sms", "Receipt", "Order received",
                                       idempotency_key="receipt-2")
     deliveries = []
 

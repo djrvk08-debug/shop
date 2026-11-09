@@ -4,6 +4,7 @@ from decimal import Decimal
 from services import cart_service
 from extensions import db
 from models import Order, Product, Shipment, User
+from tests.conftest import authenticate
 
 
 def test_cart_page_renders_cleanly(client):
@@ -81,16 +82,15 @@ def test_checkout_button_requires_login(client):
 
 def test_checkout_redirects_to_order_confirmation(client, app):
     with app.app_context():
-        user = User(email="checkout-confirmation@example.com")
+        user = User(mobile="+919876543220", mobile_verified=True)
         user.set_password("test-password")
         product = Product(name="Confirmation Mushroom", price=Decimal("12.50"), stock=5)
         db.session.add_all([user, product])
         db.session.commit()
         product_id = product.id
+        user_id = user.id
 
-    client.post("/auth/login", data={
-        "email": "checkout-confirmation@example.com", "password": "test-password"
-    })
+    authenticate(client, user_id)
     with client.session_transaction() as session:
         session["cart"] = {str(product_id): 2}
 
@@ -112,9 +112,9 @@ def test_checkout_redirects_to_order_confirmation(client, app):
 
 def test_order_confirmation_is_private_to_order_owner(client, app):
     with app.app_context():
-        owner = User(email="confirmation-owner@example.com")
+        owner = User(mobile="+919876543221", mobile_verified=True)
         owner.set_password("test-password")
-        other = User(email="confirmation-other@example.com")
+        other = User(mobile="+919876543222", mobile_verified=True)
         other.set_password("test-password")
         product = Product(name="Private Order Mushroom", price=10, stock=1)
         db.session.add_all([owner, other, product])
@@ -123,16 +123,15 @@ def test_order_confirmation_is_private_to_order_owner(client, app):
         db.session.add(order)
         db.session.commit()
         order_id = order.id
+        other_id = other.id
 
-    client.post("/auth/login", data={
-        "email": "confirmation-other@example.com", "password": "test-password"
-    })
+    authenticate(client, other_id)
     assert client.get(f"/cart/orders/{order_id}").status_code == 404
 
 
 def test_order_confirmation_shows_on_the_way_after_shipment(client, app):
     with app.app_context():
-        user = User(email="shipped-confirmation@example.com")
+        user = User(mobile="+919876543223", mobile_verified=True)
         user.set_password("test-password")
         db.session.add(user)
         db.session.flush()
@@ -144,10 +143,9 @@ def test_order_confirmation_shows_on_the_way_after_shipment(client, app):
         db.session.add(shipment)
         db.session.commit()
         order_id = order.id
+        user_id = user.id
 
-    client.post("/auth/login", data={
-        "email": "shipped-confirmation@example.com", "password": "test-password"
-    })
+    authenticate(client, user_id)
     response = client.get(f"/cart/orders/{order_id}")
     assert response.status_code == 200
     assert b"Your order is on the way" in response.data

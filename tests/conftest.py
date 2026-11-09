@@ -21,9 +21,11 @@ def app():
 
     with app_instance.app_context():
         db.create_all()
-        # TODO: Seed initial test data (e.g. test categories, sample products, test users)
+        db.session.expire_on_commit = False
+        # Tests create the records they need explicitly.
         yield app_instance
         db.session.remove()
+        db.session.expire_on_commit = True
         db.drop_all()
 
 
@@ -37,3 +39,10 @@ def client(app):
 def runner(app):
     """Provide a CLI runner for testing Flask custom CLI commands."""
     return app.test_cli_runner()
+
+
+def authenticate(client, user_id):
+    """Authenticate a test client after OTP-specific tests have covered the flow."""
+    with client.session_transaction() as session:
+        session["_user_id"] = str(user_id)
+        session["_fresh"] = True

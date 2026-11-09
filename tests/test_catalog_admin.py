@@ -5,8 +5,9 @@ import pytest
 from sqlalchemy import text
 
 from extensions import db
-from models import Category, Order, OrderItem, Product, User
+from models import Order, OrderItem, Product, User
 from services import analytics_service, search_service
+from tests.conftest import authenticate
 
 
 def test_catalog_search_autocomplete_and_idempotent_seed(app, client, runner):
@@ -16,7 +17,7 @@ def test_catalog_search_autocomplete_and_idempotent_seed(app, client, runner):
     assert second_init.exit_code == 0
     with app.app_context():
         assert Product.query.count() == 8
-        assert Category.query.count() == 4
+        assert Product.query.filter_by(pack_size="200g").count() >= 5
         pearl_id = Product.query.filter_by(name="Pearl Oyster Mushrooms").first().id
         assert search_service.search_catalog("oyster")
         assert pearl_id in search_service.search_catalog("pearl")
@@ -33,20 +34,16 @@ def test_catalog_search_autocomplete_and_idempotent_seed(app, client, runner):
     assert "Fresh Shiitake Mushrooms" in suggestion_response.get_json()["suggestions"]
 
 
-def test_catalog_category_sort_pagination_and_product_detail(app, client):
+def test_catalog_sort_pagination_and_product_detail(app, client):
     with app.app_context():
-        category = Category(name="Pagination Test")
-        db.session.add(category)
-        db.session.flush()
         db.session.add_all([
-            Product(name=f"Catalog Item {number:02}", price=number + 1, stock=10, category=category)
+            Product(name=f"Catalog Item {number:02}", price=number + 1, pack_size="100g", stock=10)
             for number in range(14)
         ])
         db.session.commit()
         product_id = Product.query.filter_by(name="Catalog Item 00").first().id
-        category_id = category.id
 
-    second_page = client.get(f"/products?page=2&category_id={category_id}")
+    second_page = client.get("/products?page=2")
     assert second_page.status_code == 200
     assert b"Product pages" in second_page.data
     detail = client.get(f"/product/{product_id}")
@@ -58,47 +55,42 @@ def test_catalog_category_sort_pagination_and_product_detail(app, client):
 
 def test_admin_pages_and_product_creation_use_database_records(app, client):
     with app.app_context():
-        category = Category(name="Admin Category")
-        admin = User(email="catalog-admin@example.com", is_admin=True)
+        admin = User(mobile="+919876543224", mobile_verified=True, is_admin=True)
         admin.set_password("admin-pass")
-        customer = User(email="shopper@example.com")
+        customer = User(mobile="+919876543225", mobile_verified=True)
         customer.set_password("customer-pass")
-        db.session.add_all([category, admin, customer])
+        db.session.add_all([admin, customer])
         db.session.flush()
-        product = Product(name="Admin Catalog Product", price=Decimal("42.50"), stock=7,
-                          category=category)
+        product = Product(name="Admin Catalog Product", price=Decimal("42.50"), pack_size="100g", stock=7)
         order = Order(user_id=customer.id, status="processing", total=Decimal("42.50"))
         db.session.add_all([product, order])
         db.session.flush()
         db.session.add(OrderItem(order_id=order.id, product_id=product.id, quantity=1,
                                  unit_price=product.price))
         db.session.commit()
+        admin_id = admin.id
 
-    login = client.post("/auth/login", data={"email": "catalog-admin@example.com",
-                                             "password": "admin-pass"})
-    assert login.status_code == 302
+    authenticate(client, admin_id)
     for path, expected in [
         ("/admin/", b"Admin Catalog Product"),
         ("/admin/products", b"Admin Catalog Product"),
-        ("/admin/orders", b"shopper@example.com"),
-        ("/admin/users", b"shopper@example.com"),
+        ("/admin/orders", b"+919876543225"),
+        ("/admin/users", b"+919876543225"),
         ("/admin/shipments", b"No shipments found."),
     ]:
         response = client.get(path)
         assert response.status_code == 200
         assert expected in response.data
 
-    with app.app_context():
-        category_id = Category.query.filter_by(name="Admin Category").first().id
     response = client.post("/admin/products/new", data={
-        "name": "Created Through Admin", "price": "51.25", "stock": "12",
-        "category_id": str(category_id),
+        "name": "Created Through Admin", "price": "51.25", "pack_size": "100g", "stock": "12",
         "thumbnail_url": "https://images.example.test/harvest.jpg",
     })
     assert response.status_code == 302
     with app.app_context():
         created = Product.query.filter_by(name="Created Through Admin").one()
         assert created.price == Decimal("51.25")
+        assert created.pack_size == "100g"
         assert created.stock == 12
         assert created.thumbnail_url == "https://images.example.test/harvest.jpg"
         created_id = created.id
@@ -109,16 +101,12 @@ def test_admin_pages_and_product_creation_use_database_records(app, client):
 
 def test_product_thumbnail_url_is_optional_and_rejects_unsafe_scheme(app):
     with app.app_context():
-        category = Category(name="Thumbnail Test")
-        db.session.add(category)
-        db.session.commit()
-
-        product = search_service.create_product("No Thumbnail", 10, 1, category.id)
+        product = search_service.create_product("No Thumbnail", 10, "100g", 1)
         assert product.thumbnail_url is None
 
         with pytest.raises(ValueError, match="HTTP or HTTPS URL"):
             search_service.create_product(
-                "Unsafe Thumbnail", 10, 1, category.id, "javascript:alert(1)"
+                "Unsafe Thumbnail", 10, "100g", 1, "javascript:alert(1)"
             )
 
 
@@ -128,7 +116,7 @@ def test_init_db_adds_thumbnail_column_to_existing_product_table(app, runner):
         with db.engine.begin() as connection:
             connection.execute(text(
                 "CREATE TABLE products (id INTEGER PRIMARY KEY, name VARCHAR(255) NOT NULL, "
-                "price NUMERIC(10, 2) NOT NULL, stock INTEGER NOT NULL, category_id INTEGER)"
+                "price NUMERIC(10, 2) NOT NULL, stock INTEGER NOT NULL)"
             ))
 
     result = runner.invoke(args=["init-db"])
@@ -136,11 +124,12 @@ def test_init_db_adds_thumbnail_column_to_existing_product_table(app, runner):
     with app.app_context(), db.engine.connect() as connection:
         columns = {row[1] for row in connection.execute(text("PRAGMA table_info(products)"))}
         assert "thumbnail_url" in columns
+        assert "pack_size" in columns
 
 
 def test_analytics_use_ordered_sales_records(app):
     with app.app_context():
-        user = User(email="analytics@example.com")
+        user = User(mobile="+919876543226", mobile_verified=True)
         user.set_password("test-password")
         product = Product(name="Analytics Mushroom", price=10, stock=10)
         db.session.add_all([user, product])
